@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hr-policy-rag"
+version = "0.1.0"
+description = "Local retrieval-augmented question answering over fictional HR policies"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "faiss-cpu==1.10.0",
+    "groq==0.18.0",
+    "numpy==1.26.4",
+    "sentence-transformers==3.4.1",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

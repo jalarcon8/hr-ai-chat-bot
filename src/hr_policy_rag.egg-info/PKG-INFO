@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: hr-policy-rag
+Version: 0.1.0
+Summary: Local retrieval-augmented question answering over fictional HR policies
+Requires-Python: <3.12,>=3.11
+Requires-Dist: faiss-cpu==1.10.0
+Requires-Dist: groq==0.18.0
+Requires-Dist: numpy==1.26.4
+Requires-Dist: sentence-transformers==3.4.1

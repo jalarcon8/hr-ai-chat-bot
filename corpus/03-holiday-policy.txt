@@ -1,0 +1,95 @@
+document_id: HR-003
+title: Holiday Policy
+company: Northstar Technologies
+category: Human Resources
+owner: People Operations
+version: "1.0"
+effective_date: 2026-01-01
+last_reviewed: 2026-01-01
+review_cycle: annual
+status: active
+applies_to: eligible US employees
+related_documents:
+  - HR-001
+  - HR-002
+  - HR-006
+
+Holiday Policy
+
+Northstar Technologies | Policy HR-003 | Version 1.0
+
+Fictional training document. Northstar Technologies, its contacts, systems, and policies are invented for RAG demonstration. This document does not replace applicable law, plan documents, or written agreements.
+
+1. Purpose and coverage
+
+1.1 Scope
+
+Northstar provides designated paid company holidays separately from accrued PTO. HR-002 controls PTO balances; HR-006 controls protected leave. The annual holiday calendar is published in the People Portal before January 1. State or local law and signed agreements control when they provide different rights.
+
+1.2 Eligibility
+
+Regular full-time US employees scheduled for 40 hours are eligible from hire. Employees with approved 30–39-hour schedules receive holiday pay for the hours ordinarily scheduled on the observed day. Other workers may have location-specific statutory entitlements; People Operations confirms eligibility.
+
+2. Observed holiday calendar
+
+2.1 2026 company holidays
+
+For 2026, Northstar observes New Year’s Day (January 1), Martin Luther King Jr. Day (January 19), Memorial Day (May 25), Juneteenth (June 19), Independence Day observed (July 3), Labor Day (September 7), Thanksgiving Day (November 26), day after Thanksgiving (November 27), and Christmas Day (December 25). These dates apply to the fictional 2026 calendar; future years require a newly published calendar.
+
+2.2 Weekend observance
+
+A fixed-date holiday falling on Saturday is normally observed on the preceding Friday; one falling on Sunday is normally observed on the following Monday. The published calendar is authoritative when an operational exception exists.
+
+2.3 Customer coverage
+
+Support and operations teams may need scheduled holiday coverage. Managers must publish rotations in advance, coordinate with People Operations, and comply with applicable pay and rest requirements. Employees should not assume that working a holiday creates an extra PTO credit.
+
+3. Floating holidays
+
+3.1 Annual allowance
+
+Eligible full-time employees receive two floating holidays (16 hours) per calendar year; eligible 30–39-hour employees receive a prorated amount. New hires beginning July 1 or later receive one floating holiday (8 hours for a 40-hour schedule) for that first calendar year.
+
+3.2 Requesting and expiration
+
+Request floating-holiday hours in the People Portal at least five business days in advance when practicable. Manager approval follows the normal coverage workflow. Unused floating holidays expire December 31 unless law requires otherwise; they do not carry over under the default plan and are not deducted from accrued PTO.
+
+3.3 Personal observances
+
+Floating holidays may be used for religious, cultural, civic, or personal observances. Employees need not disclose a religious belief to request a floating holiday. Requests for legally required accommodation are handled separately by People Operations.
+
+4. Pay and scheduling rules
+
+4.1 Holiday during PTO
+
+An eligible employee on an approved vacation receives holiday pay for normally scheduled hours on an observed company holiday and is not charged PTO for those hours. Example: a Monday–Friday 40-hour employee taking Thanksgiving week uses 24 PTO hours because Thursday and Friday are holidays.
+
+4.2 Holiday during leave
+
+Holiday pay during an extended or unpaid leave depends on the leave designation, plan terms, and applicable law. HR-006 and People Operations determine the correct code; employees must not assume a holiday interrupts protected leave.
+
+4.3 Part-time and alternative schedules
+
+Holiday hours are based on normally scheduled work on the observed day, subject to local rules. An employee not ordinarily scheduled that day does not automatically receive replacement hours. People Operations can evaluate equitable scheduling alternatives.
+
+4.4 Overtime
+
+For nonexempt employees, paid holiday hours are not treated as hours worked for federal overtime calculations unless applicable law or a written plan requires otherwise. All hours actually worked must be recorded.
+
+5. Procedure and questions
+
+5.1 How to verify
+
+Open People Portal → Time Off → Holiday Calendar. Confirm your location and schedule. If the calendar differs from a team announcement, ask People Operations to reconcile before booking travel.
+
+5.2 Frequently asked questions
+
+Does a company holiday use my PTO? No, when you qualify for holiday pay. Can I move Christmas Day to another day? Not automatically; request a floating holiday or an accommodation. Can a manager cancel a company holiday? Only through a formally approved coverage plan, not an informal change.
+
+5.3 Escalation
+
+Send eligibility and coding questions to people@northstar.example. Payroll corrections go to payroll@northstar.example. A manager cannot independently change the published company holiday calendar.
+
+6. Document control
+
+Owner: People Operations. Effective: January 1, 2026. Version: 1.0. Status: Active. Related policies: HR-001,  HR-002,  HR-006. People Operations or the responsible policy owner resolves ambiguities; applicable law and governing plan documents prevail where required. Policy updates are published in the People Portal. For policy questions, use the contacts specified above or consult HR-001 Employee Handbook.

@@ -1,0 +1,68 @@
+[
+  {
+    "question": "How many floating holidays does an eligible full-time employee receive?",
+    "expected_document_ids": ["HR-003"],
+    "expected_section": "3.1 Annual allowance",
+    "verification": "Check the allowance and exact cited sentence against the holiday TXT policy.",
+    "coverage": "covered"
+  },
+  {
+    "question": "How much advance approval is needed to work temporarily from another state?",
+    "expected_document_ids": ["HR-004"],
+    "expected_section": "2.2 Working from another state",
+    "verification": "Check the prior written approval and 15-business-day guidance against the remote-work TXT policy.",
+    "coverage": "covered"
+  },
+  {
+    "question": "What is the daily meal reimbursement cap for approved overnight travel?",
+    "expected_document_ids": ["FIN-001"],
+    "expected_section": "2.3 Meals",
+    "verification": "Check the cap and receipt condition against the expense TXT policy.",
+    "coverage": "covered"
+  },
+  {
+    "question": "How does annual PTO accrue for eligible employees?",
+    "expected_document_ids": ["HR-002"],
+    "expected_section": "3. Annual allowance and accrual",
+    "verification": "Check the accrual schedule against the PTO Markdown policy.",
+    "coverage": "covered"
+  },
+  {
+    "question": "What should an employee do after a suspicious link?",
+    "expected_document_ids": ["SEC-001"],
+    "expected_section": "5.2 Example: suspicious link",
+    "verification": "Check the response steps against the data security Markdown policy.",
+    "coverage": "covered"
+  },
+  {
+    "question": "How do PTO requests interact with company holidays?",
+    "expected_document_ids": ["HR-002", "HR-003"],
+    "expected_section": null,
+    "verification": "Explain PTO request workflow and holiday treatment using both policies.",
+    "coverage": "multi_document"
+  },
+  {
+    "question": "Does Northstar reimburse private yacht expenses?",
+    "expected_document_ids": [],
+    "expected_section": null,
+    "expected_status": "unsupported",
+    "verification": "No policy claim or fabricated citation.",
+    "coverage": "unsupported"
+  },
+  {
+    "question": "What is the exact policy for the fictional benefit not described in the corpus?",
+    "expected_document_ids": [],
+    "expected_section": null,
+    "expected_status": "unsupported",
+    "verification": "No unsupported policy claim or fabricated citation.",
+    "coverage": "unsupported"
+  },
+  {
+    "question": "Can an employee work from another state and receive a relocation benefit?",
+    "expected_document_ids": [],
+    "expected_section": null,
+    "expected_status": "partial",
+    "verification": "Identify available remote-work evidence and the missing relocation-policy evidence.",
+    "coverage": "partial"
+  }
+]

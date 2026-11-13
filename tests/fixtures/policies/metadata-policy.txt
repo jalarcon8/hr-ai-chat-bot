@@ -1,0 +1,5 @@
+document_id: FIXTURE-001
+title: Synthetic Fixture Policy
+
+1.1 Eligibility
+Synthetic fixture text for parser and citation tests.

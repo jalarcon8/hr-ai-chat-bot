@@ -1,0 +1,100 @@
+document_id: HR-004
+title: Remote Work Policy
+company: Northstar Technologies
+category: Human Resources
+owner: People Operations
+version: "1.0"
+effective_date: 2026-01-01
+last_reviewed: 2026-01-01
+review_cycle: annual
+status: active
+applies_to: US employees with approved remote or hybrid arrangements
+related_documents:
+  - HR-001
+  - SEC-001
+  - IT-001
+  - IT-002
+
+Remote Work Policy
+
+Northstar Technologies | Policy HR-004 | Version 1.0
+
+Fictional training document. Northstar Technologies, its contacts, systems, and policies are invented for RAG demonstration. This document does not replace applicable law, plan documents, or written agreements.
+
+1. Scope and work arrangements
+
+1.1 Arrangement types
+
+Northstar uses office-based, hybrid, and fully remote designations. A position’s designation is recorded in the People Portal and may differ by job duties. A remote arrangement does not change performance, confidentiality, timekeeping, or attendance obligations.
+
+1.2 Hybrid attendance
+
+Unless an approved team schedule says otherwise, hybrid employees attend their assigned office Tuesday and Thursday. Managers may coordinate occasional swaps for business reasons; a permanent arrangement change requires People Operations approval.
+
+1.3 Core collaboration
+
+Most corporate teams coordinate around 9:00 a.m.–5:00 p.m. Mountain Time. Employees agree on overlap hours with their manager, keep calendars current, and attend required meetings. Nonexempt employees must accurately record all hours worked.
+
+2. Approval and location
+
+2.1 Request workflow
+
+Submit a work-arrangement request in the People Portal describing location, proposed schedule, business justification, and start date. The manager reviews role suitability and coverage; People Operations reviews employment and tax implications; IT reviews security needs. Do not begin a permanent change until written approval is recorded.
+
+2.2 Working from another state
+
+Even a temporary two-week stay in another US state requires written approval from People Operations before travel. Submit the request at least 15 business days in advance where practical. Approval is not guaranteed; tax registration, payroll, insurance, and customer restrictions may prevent it.
+
+2.3 International work
+
+Working outside the United States is prohibited unless People Operations, Legal, and Security provide explicit written approval before departure. A vacation trip does not authorize working abroad.
+
+2.4 Address changes
+
+Update your actual work location in the People Portal within five business days of an approved move. A mailing-address update alone does not authorize a new work location.
+
+3. Workspace and technology
+
+3.1 Privacy and ergonomics
+
+Use a reasonably private, safe workspace. Lock your screen when away, prevent household members from seeing company data, and avoid discussing confidential matters in public. Report ergonomic concerns to People Operations.
+
+3.2 Approved devices
+
+Use managed company devices for company work unless IT grants a written exception. Personal or shared computers and personal cloud drives are not approved for storing company data. IT-001 controls equipment provisioning and returns.
+
+3.3 Connectivity and outages
+
+Employees are responsible for reliable internet access. If connectivity fails, promptly notify the manager, open an IT ticket if applicable, and agree on alternate work or leave coding. Never record hours not worked.
+
+4. Security and expenses
+
+4.1 Data security
+
+Use company VPN or other approved access controls when required, MFA, and approved collaboration systems. Do not print sensitive customer records at home without Security approval. SEC-001 governs incident reporting and data classification.
+
+4.2 Home-office costs
+
+Northstar does not automatically reimburse personal internet, utilities, furniture, or rent. Required business expenses and approved equipment are handled under FIN-001 and IT-001, subject to applicable reimbursement law.
+
+4.3 Travel to office
+
+Ordinary commuting to the assigned office is generally not reimbursable. Required travel to another business location may qualify under FIN-001 with preapproval.
+
+5. Exceptions and enforcement
+
+5.1 Accommodation requests
+
+Employees seeking disability-related or other legally protected adjustments should contact People Operations. An accommodation request is reviewed separately from discretionary remote-work eligibility.
+
+5.2 Performance and review
+
+Managers review arrangements when roles or business needs change. Any material change is communicated in writing with reasonable notice, subject to law and agreements. Violations may result in revised access or disciplinary action.
+
+5.3 Examples
+
+Can I work from a hotel in another state for two weeks? Not without prior written People Operations approval. Can I use a family laptop if mine breaks? No, contact IT-002 for a loaner. Can my manager approve a permanent relocation alone? No.
+
+6. Document control
+
+Owner: People Operations. Effective: January 1, 2026. Version: 1.0. Status: Active. Related policies: HR-001,  SEC-001,  IT-001,  IT-002. People Operations or the responsible policy owner resolves ambiguities; applicable law and governing plan documents prevail where required. Policy updates are published in the People Portal. For policy questions, use the contacts specified above or consult HR-001 Employee Handbook.

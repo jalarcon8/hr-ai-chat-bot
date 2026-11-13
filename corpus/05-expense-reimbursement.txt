@@ -1,0 +1,108 @@
+document_id: FIN-001
+title: Expense Reimbursement Policy
+company: Northstar Technologies
+category: Finance
+owner: Finance Operations
+version: "1.0"
+effective_date: 2026-01-01
+last_reviewed: 2026-01-01
+review_cycle: annual
+status: active
+applies_to: US employees incurring authorized business expenses
+related_documents:
+  - HR-001
+  - HR-004
+  - IT-001
+  - SEC-001
+
+Expense Reimbursement Policy
+
+Northstar Technologies | Policy FIN-001 | Version 1.0
+
+Fictional training document. Northstar Technologies, its contacts, systems, and policies are invented for RAG demonstration. This document does not replace applicable law, plan documents, or written agreements.
+
+1. Principles and authority
+
+1.1 Business purpose
+
+Northstar reimburses reasonable, necessary, documented expenses incurred for authorized company business, subject to applicable law. Employees must use the fictional Northstar Expense Portal and provide an accurate business purpose.
+
+1.2 Approvals
+
+A manager confirms business necessity and budget; Finance checks policy and documentation. Employees may not approve their own expenses. A manager’s verbal approval does not replace required written preapproval.
+
+1.3 Deadlines
+
+Submit reimbursement claims within 30 calendar days of the transaction when practical. Finance targets payment within 15 business days after a complete claim is approved. Late claims are reviewed under applicable reimbursement law rather than automatically forfeited.
+
+2. Travel and lodging
+
+2.1 Travel preapproval
+
+Obtain manager approval in the Expense Portal before booking flights, hotels, or rental cars. Air travel is economy class unless Finance grants an exception. Book reasonable fares and retain itinerary and proof of payment.
+
+2.2 Lodging
+
+Use standard business lodging near the work site. Nightly room rates above $225 before taxes require written Finance approval before booking, except when a designated conference hotel or market conditions justify an exception.
+
+2.3 Meals
+
+For approved overnight business travel, actual reasonable meal costs are reimbursable up to $75 per traveler per day including tips and taxes, with itemized receipts. Alcohol is not reimbursable under the standard plan. Client entertainment requires documented attendee names and business purpose.
+
+2.4 Ground transportation
+
+Use cost-effective public transit, ride-share, or rental cars. Personal vehicle business mileage is reimbursed at the applicable company-published rate, not for normal commuting. Record origin, destination, business purpose, and miles.
+
+3. Purchases and equipment
+
+3.1 Preapproval thresholds
+
+Any single non-travel purchase above $250 requires written manager preapproval; purchases above $1,000 also require Finance approval. Splitting a purchase to avoid a threshold is prohibited.
+
+3.2 Home office
+
+Home-office furniture and personal internet are not automatically covered. IT-001 governs managed laptops and standard accessories. State-required reimbursement may apply even where company policy would otherwise exclude an item.
+
+3.3 Training
+
+Role-related courses, conferences, and certifications require manager preapproval, including cost and expected benefit. Optional personal subscriptions are not automatically reimbursable.
+
+4. Receipts and processing
+
+4.1 Required evidence
+
+For expenses of $25 or more, attach an itemized receipt and proof of payment; for smaller expenses provide available evidence and a business explanation. Credit-card summaries alone may be insufficient to establish items purchased. Finance may request additional evidence.
+
+4.2 Submission steps
+
+1. Open Expense Portal → New Claim. 2. Select category and cost center. 3. Enter date, merchant, currency, amount, and business purpose. 4. Attach receipts and preapprovals. 5. Submit to manager; Finance reviews after manager approval.
+
+4.3 Currencies and refunds
+
+Enter the original currency and amount; the portal converts at the approved processing rate. Report refunds, credits, or canceled travel promptly and return duplicate reimbursements.
+
+4.4 Corporate cards
+
+Corporate cards are for authorized company expenses only. Report loss or suspected fraud immediately to Finance and Security when appropriate. Never submit a card-paid expense as a personal reimbursement.
+
+5. Exceptions and scenarios
+
+5.1 Nonreimbursable examples
+
+Personal entertainment, fines, normal commuting, companion travel, personal upgrades, unapproved gifts, and unsupported duplicate claims are normally excluded. Legally required reimbursements are not waived by this list.
+
+5.2 Scenario: $280 monitor
+
+A remote employee should request IT approval under IT-001 before buying a monitor. Because the purchase exceeds $250, manager preapproval is also required if personal purchase is authorized; Finance confirms reimbursement eligibility.
+
+5.3 Scenario: $90 dinner
+
+An employee on approved overnight travel spends $90 on an individual dinner. The daily $75 meal cap applies to total meals that day, so reimbursement is limited absent a documented exception.
+
+5.4 Disputes and contacts
+
+Ask expenses@northstar.example for status or corrections. Escalate unresolved policy disputes to the Finance Operations lead; concerns about retaliation can be reported through HR-007.
+
+6. Document control
+
+Owner: Finance Operations. Effective: January 1, 2026. Version: 1.0. Status: Active. Related policies: HR-001,  HR-004,  IT-001,  SEC-001. People Operations or the responsible policy owner resolves ambiguities; applicable law and governing plan documents prevail where required. Policy updates are published in the People Portal. For policy questions, use the contacts specified above or consult HR-001 Employee Handbook.

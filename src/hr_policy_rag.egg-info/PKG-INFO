@@ -7,3 +7,6 @@ Requires-Dist: faiss-cpu==1.10.0
 Requires-Dist: groq==0.18.0
 Requires-Dist: numpy==1.26.4
 Requires-Dist: sentence-transformers==3.4.1
+Provides-Extra: dev
+Requires-Dist: pytest==8.3.4; extra == "dev"
+Requires-Dist: ruff==0.17.5; extra == "dev"

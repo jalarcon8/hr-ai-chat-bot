@@ -4,13 +4,11 @@ from pathlib import Path
 
 import pytest
 
+from hr_rag.answers import answer_question
 from hr_rag.config import ChunkingConfig
 from hr_rag.documents import ingest_corpus
-from hr_rag.answers import answer_question
 from hr_rag.index import build_index, retrieve
-from tests.fixtures.doubles import DeterministicEmbedder
-from tests.fixtures.doubles import EvidenceGenerator
-
+from tests.fixtures.doubles import DeterministicEmbedder, EvidenceGenerator
 
 pytest.importorskip("faiss")
 PROJECT_ROOT = Path(__file__).resolve().parents[1]

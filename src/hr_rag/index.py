@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
 import hashlib
 import json
 import os
-from pathlib import Path
 import re
 import shutil
 import tempfile
 import uuid
+from dataclasses import asdict
+from pathlib import Path
 from typing import Protocol
 
 import numpy as np
@@ -117,7 +117,7 @@ def _active_metadata(index_root: Path) -> tuple[str, Path, dict[str, object]]:
     try:
         pointer = json.loads(pointer_path.read_text(encoding="utf-8"))
         if not isinstance(pointer, dict):
-            raise ValueError("invalid active pointer")
+            raise TypeError("invalid active pointer")
         generation_id = str(pointer["generation_id"])
         if not re.fullmatch(r"[a-f0-9]{32}", generation_id):
             raise ValueError("invalid generation id")

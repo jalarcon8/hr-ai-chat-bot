@@ -1,10 +1,9 @@
 import pytest
 
+import hr_rag.index as index_module
 from hr_rag import ChunkingConfig, build_index, retrieve
 from hr_rag.models import IndexError, MetadataValidationError
 from tests.fixtures.doubles import DeterministicEmbedder
-import hr_rag.index as index_module
-
 
 pytest.importorskip("faiss")
 

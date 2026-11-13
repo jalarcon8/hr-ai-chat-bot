@@ -8,7 +8,12 @@ from pathlib import Path
 from typing import Protocol
 
 from .config import ChunkingConfig
-from .models import DocumentValidationError, MetadataValidationError, PolicyChunk, PolicyDocument
+from .models import (
+    DocumentValidationError,
+    MetadataValidationError,
+    PolicyChunk,
+    PolicyDocument,
+)
 
 _METADATA_LINE = re.compile(r"^([A-Za-z_][A-Za-z0-9_-]*):[ \t]*(.*)$")
 _MARKDOWN_HEADING = re.compile(r"^(#{1,6})[ \t]+(.+?)\s*#*\s*$")

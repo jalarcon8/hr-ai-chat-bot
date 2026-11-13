@@ -65,9 +65,8 @@ def test_build_persists_aligned_faiss_metadata_and_retrieves_top_k(tmp_path):
     assert np.allclose(np.linalg.norm(stored_vectors, axis=1), 1.0, atol=1e-5)
     all_results = retrieve("apples red fruit", index_dir, embedder=DeterministicEmbedder(), k=100)
     assert len(all_results.evidence) == built.chunk_count
-    assert list(item.score for item in all_results.evidence) == sorted(
-        (item.score for item in all_results.evidence), reverse=True
-    )
+    scores = [item.score for item in all_results.evidence]
+    assert scores == sorted(scores, reverse=True)
     result = retrieve("apples red fruit", index_dir, embedder=DeterministicEmbedder(), k=1)
     assert len(result.evidence) == 1
     assert result.evidence[0].document_id == "DOC-1"

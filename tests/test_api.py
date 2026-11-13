@@ -4,7 +4,6 @@ from hr_rag import ChunkingConfig, answer_question, build_index
 from hr_rag.models import GroundingValidationError
 from tests.fixtures.doubles import DeterministicEmbedder, EvidenceGenerator
 
-
 pytest.importorskip("faiss")
 
 

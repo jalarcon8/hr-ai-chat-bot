@@ -57,7 +57,8 @@ def test_groq_context_contains_exact_untrusted_evidence(monkeypatch):
                 message = Message()
 
             class Response:
-                choices = [Choice()]
+                def __init__(self):
+                    self.choices = [Choice()]
 
             return Response()
 

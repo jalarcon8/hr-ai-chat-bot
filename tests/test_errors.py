@@ -1,9 +1,13 @@
 import pytest
 
 from hr_rag import ChunkingConfig, answer_question, build_index
-from hr_rag.models import DocumentValidationError, EmbeddingError, GenerationError, InvalidInputError
+from hr_rag.models import (
+    DocumentValidationError,
+    EmbeddingError,
+    GenerationError,
+    InvalidInputError,
+)
 from tests.fixtures.doubles import DeterministicEmbedder
-
 
 pytest.importorskip("faiss")
 

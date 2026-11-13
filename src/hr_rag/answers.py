@@ -74,7 +74,7 @@ class GroqGenerator:
                 raise ValueError("empty response")
             value = json.loads(content)
             if not isinstance(value, dict):
-                raise ValueError("response is not an object")
+                raise TypeError("response is not an object")
             return value
         except GenerationError:
             raise

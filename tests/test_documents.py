@@ -47,7 +47,7 @@ def test_txt_metadata_numbered_section_and_nonrecognized_nested_values(tmp_path)
 
 
 def test_missing_identity_uses_deterministic_relative_filename(tmp_path):
-    path = write_source(tmp_path, "Sub Folder\\No ID.txt", "Plain policy text.")
+    path = write_source(tmp_path, "Sub Folder/No ID.txt", "Plain policy text.")
     document = parse_document(path, tmp_path)
     assert document.document_id == "sub folder/no id"
 

@@ -192,27 +192,3 @@ remains incomplete until Linux validation is performed. Live Sentence Transforme
 inference has also not been run. Deterministic tests verify structure, provenance, rebuild
 behavior, and error handling; semantic support must still be checked in the documented
 acceptance review or an opt-in provider smoke test.
-
-
-## Running locally
-python -m flask --app backend.app run --debug --port 5000
-npm run dev --prefix .\frontend -- --host localhost
-
-The application is running now.
-
-Open the frontend:
-
-http://localhost:5173/
-
-Available routes:
-
-/
-/menu
-/reservations
-/about
-/gallery
-The Flask API is running at:
-
-http://localhost:5000/api/health
-
-The frontend build and backend tests pass. The current implementation is still a foundation scaffold, so some features are demo-level and PostgreSQL-backed persistence is not fully wired yet.

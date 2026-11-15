@@ -59,10 +59,10 @@ observable privacy-safe traces, and remaining error paths.
 changed drafts need fresh confirmation; no email is sent; unsupported actions are refused; and
 traces expose observable choices/outcomes without hidden reasoning or sensitive raw data.
 
-- [ ] T011 [US5] Implement the existing `draft_hr_email` proposal/confirmation flow in `src/hr_agent/agent.py` and `src/hr_agent/types.py`; carry the pending proposal through caller context, require explicit action-specific confirmation before reporting the simulated outcome, and require reconfirmation after material changes, with tests in `tests/unit/test_agent_confirmation.py`.
-- [ ] T012 [US5] Enforce refusal of actual email sending, approvals, employee-record updates, and unsupported MCP actions at the agent execution boundary in `src/hr_agent/agent.py`; verify requests are refused even when the LLM proposes them in `tests/unit/test_agent_safety.py`.
-- [ ] T013 [US4] Implement allowlisted operational trace creation in `src/hr_agent/agent.py` and `src/hr_agent/types.py`; record concise intent categories, selected tools, outcome categories, allowlisted argument summaries, tool-result summaries, evidence references, and answer-basis categories. In `tests/unit/test_agent_trace.py`, verify traces exclude credentials, raw employee records, raw user questions, email drafts, internal prompts, and hidden chain-of-thought.
-- [ ] T014 [US3] Harden request handling in `src/hr_agent/agent.py` and `src/hr_agent/errors.py` for provider failures, multiple tool calls returned in one model turn, exhausted call bounds, and trace persistence errors; surface explicit outcomes and verify each path in `tests/unit/test_agent_hardening.py`.
+- [X] T011 [US5] Implement the existing `draft_hr_email` proposal/confirmation flow in `src/hr_agent/agent.py` and `src/hr_agent/types.py`; carry the pending proposal through caller context, require explicit action-specific confirmation before reporting the simulated outcome, and require reconfirmation after material changes, with tests in `tests/unit/test_agent_confirmation.py`.
+- [X] T012 [US5] Enforce refusal of actual email sending, approvals, employee-record updates, and unsupported MCP actions at the agent execution boundary in `src/hr_agent/agent.py`; verify requests are refused even when the LLM proposes them in `tests/unit/test_agent_safety.py`.
+- [X] T013 [US4] Implement allowlisted operational trace creation in `src/hr_agent/agent.py` and `src/hr_agent/types.py`; record concise intent categories, selected tools, outcome categories, allowlisted argument summaries, tool-result summaries, evidence references, and answer-basis categories. In `tests/unit/test_agent_trace.py`, verify traces exclude credentials, raw employee records, raw user questions, email drafts, internal prompts, and hidden chain-of-thought.
+- [X] T014 [US3] Harden request handling in `src/hr_agent/agent.py` and `src/hr_agent/errors.py` for provider failures, multiple tool calls returned in one model turn, exhausted call bounds, and trace persistence errors; surface explicit outcomes and verify each path in `tests/unit/test_agent_hardening.py`.
 
 ## Milestone 4: Verification and Delivery (4 tasks)
 
@@ -127,6 +127,21 @@ Verification from the project `.venv`: focused Milestone 2 and vertical-slice te
 opt-in live provider test; no live provider call was made. Pylance syntax checks reported no
 syntax errors in the changed Python files. These results do not mark the full Feature 003
 requirements Verified.
+
+## Milestone 3 Execution Evidence
+
+| Requirement | Evidence |
+|---|---|
+| QR-022 | T011 confirmation tests cover proposal-specific confirmation, cancellation, changed and forged proposals, and distinct proposals. T012 tests reject model-proposed sending, approvals, record updates, and ticket updates without MCP invocation. The existing MCP draft is unsent; no confirmation state is stored. |
+| QR-020 | T013 tests inspect returned and persisted traces for draft, policy, and employee requests; they verify tool and outcome summaries and source references without raw questions, employee records, credentials, or draft text. |
+| QR-021 | T014 tests cover provider failure, multiple model tool calls, and trace-write failure; existing focused tests cover discovery failure, invalid arguments, exhausted bounds, and unavailable tools. The MCP client timeout code is mapped to a timeout and tested. |
+| QR-026 | Draft preparation invokes the existing discovered tool through `MCPClient.call`; actual-protocol multi-tool acceptance remains T015. |
+
+Focused safety/error tests: **15 passed**. Full pytest with `AGENT_RUN_PROVIDER_SMOKE=0`:
+**346 passed, 1 skipped**; Ruff and `git diff --check` passed. No live provider call was made.
+The confirmation integrity key is held in the agent instance only; replacing that instance
+requires preparing a new proposal. These results do not mark Feature 003 requirements Verified;
+T015-T018 remain outstanding.
 
 ## Dependencies and Execution Order
 

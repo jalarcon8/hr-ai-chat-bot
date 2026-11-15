@@ -72,6 +72,7 @@ def test_agent_executes_result_dependent_policy_and_employee_sequences(first_too
             "search_policy_documents",
             "lookup_employee_profile",
             "check_pto_balance",
+            "draft_hr_email",
         ]
         second_turn_messages = llm_client.requests[1]["messages"]
         assert second_turn_messages[-1]["role"] == "tool"

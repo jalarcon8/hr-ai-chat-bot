@@ -147,9 +147,7 @@ def test_policy_request_uses_llm_selected_mcp_search_and_returns_citations():
         tool_message = llm_client.requests[1][0][-1]
         assert tool_message["role"] == "tool"
         assert json.loads(tool_message["content"])["evidence"][0]["document_id"] == "HR-004"
-        assert all(
-            "question" not in str(event) for event in response.operational_trace.events
-        )
+        assert all(question not in str(event) for event in response.operational_trace.events)
 
     asyncio.run(exercise())
 

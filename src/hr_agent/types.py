@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from typing import Any, Literal, Protocol
+from uuid import uuid4
 
 from .config import AgentConfig
 
@@ -67,6 +69,8 @@ class ToolInvocationRecord:
 @dataclass
 class OperationalTrace:
     events: list[dict[str, Any]] = field(default_factory=list)
+    request_id: str = field(default_factory=lambda: str(uuid4()))
+    started_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
 
 @dataclass

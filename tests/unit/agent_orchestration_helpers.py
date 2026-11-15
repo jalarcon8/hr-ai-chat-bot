@@ -50,6 +50,16 @@ def discovered_tools():
             "required": ["employee_id"],
             "additionalProperties": False,
         },
+        "draft_hr_email": {
+            "type": "object",
+            "properties": {
+                "recipient_name": {"type": "string", "minLength": 1},
+                "purpose": {"type": "string", "minLength": 1},
+                "supporting_details": {"type": "string"},
+            },
+            "required": ["recipient_name", "purpose"],
+            "additionalProperties": False,
+        },
     }
     return [
         Tool(

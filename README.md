@@ -141,6 +141,11 @@ Remove-Item Env:\AGENT_RUN_PROVIDER_SMOKE
 invoke the live provider. Leave it at `0` for routine tests and CI. The live test uses synthetic
 policy fixtures, requires provider access and quota, and is skipped when no key is configured.
 
+Feature 003 returns an unsent email proposal with an `action_id` and `pending_action`. Pass both
+back to `confirm_action` on the same `HRAgent` instance with an explicit boolean confirmation.
+The proposal is not stored; restarting or replacing the agent requires a new proposal. Set
+`AGENT_TRACE_PATH` to persist sanitized agent traces locally; trace write failures are errors.
+
 ## Feature 001: Local HR Policy RAG
 
 F001 provides a synchronous Python interface over the fictional Markdown and TXT policies in

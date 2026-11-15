@@ -113,7 +113,11 @@ def test_model_reselection_does_not_retry_failed_call_in_same_request():
         assert response.status == "error"
         assert response.error_code == "mcp_tool_call_failed"
         assert len(mcp_client.calls) == 1
-        assert response.operational_trace.events[-1]["outcome"] == "automatic_retry_suppressed"
+        assert any(
+            event["outcome"] == "automatic_retry_suppressed"
+            for event in response.operational_trace.events
+            if "outcome" in event
+        )
 
     asyncio.run(exercise())
 
@@ -148,5 +152,30 @@ def test_tool_timeout_is_reported_as_partial_failure():
         assert response.status == "partial"
         assert response.tool_calls[1].status == "timeout"
         assert "failed (timeout)" in response.evidence_limitations
+
+    asyncio.run(exercise())
+
+
+def test_mcp_client_protocol_timeout_is_reported_as_timeout():
+    llm_client = ScriptedLLM(
+        [
+            tool_completion("lookup_employee_profile", {"employee_id": "SYN-001"}, "timeout"),
+            final_completion("The profile is unavailable."),
+        ]
+    )
+    mcp_client = FakeMCPClient(
+        failures={
+            "lookup_employee_profile": [
+                ClientError("unclassified_error", protocol_code=408)
+            ]
+        }
+    )
+
+    async def exercise():
+        agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
+        response = await agent.process_request("Look up the synthetic profile.")
+        assert response.status == "error"
+        assert response.error_code == "timeout"
+        assert response.tool_calls[0].status == "timeout"
 
     asyncio.run(exercise())

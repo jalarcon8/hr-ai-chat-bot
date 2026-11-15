@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from copy import deepcopy
 from typing import Any
 
-from groq import AsyncGroq
+from groq import APIError, AsyncGroq
 from mcp.types import Tool
 
 from .config import AgentConfig, get_agent_setting
@@ -63,8 +63,8 @@ class GroqLLMClient:
                 temperature=config.temperature,
                 max_tokens=config.max_tokens,
             )
-        except Exception as exc:
-            raise AgentRuntimeError("llm_request_failed") from exc
+        except APIError:
+            raise AgentRuntimeError("llm_request_failed") from None
 
         if not response.choices:
             raise AgentRuntimeError("empty_llm_response")

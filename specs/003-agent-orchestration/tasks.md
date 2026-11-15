@@ -45,10 +45,10 @@ limitations, and explicit partial failures.
 multi-step sequences, missing arguments produce clarification rather than guesses, conflicting
 evidence is reported without invented resolution, and tool failures do not appear successful.
 
-- [ ] T007 [US1] Extend the bounded loop in `src/hr_agent/agent.py` to execute one model-selected MCP call per turn, return each structured result to the next LLM turn, and stop at `max_tool_calls`; cover sequential result-dependent behavior and at least two representative multi-step sequences, each combining `search_policy_documents` with at least one existing structured-data MCP tool, in `tests/unit/test_agent_orchestration.py`. Keep Feature 004's dedicated business workflows out of scope.
-- [ ] T008 [US3] Implement discovered-schema argument validation and missing-context clarification in `src/hr_agent/agent.py`; reject invalid arguments and ask for required identifiers/details instead of guessing, with tests in `tests/unit/test_agent_validation.py`.
-- [ ] T009 [US4] Implement evidence-grounded synthesis and citation/limitation handling in `src/hr_agent/agent.py`; cite policy claims from `search_policy_documents`, ground structured claims in MCP results, and report absent, incomplete, or conflicting evidence without inventing a resolution, with tests in `tests/unit/test_agent_evidence.py`.
-- [ ] T010 [US3] Implement MCP tool error, timeout, and valid `not_found`/`indeterminate` handling in `src/hr_agent/agent.py` and `src/hr_agent/errors.py`; do not automatically retry failed MCP tool calls, surface failures clearly, and allow a subsequent user request to initiate a fresh call. Return partial answers only when remaining evidence supports them and test failure, no automatic reissue, and subsequent-request retry behavior in `tests/unit/test_agent_errors.py`.
+- [X] T007 [US1] Extend the bounded loop in `src/hr_agent/agent.py` to execute one model-selected MCP call per turn, return each structured result to the next LLM turn, and stop at `max_tool_calls`; cover sequential result-dependent behavior and at least two representative multi-step sequences, each combining `search_policy_documents` with at least one existing structured-data MCP tool, in `tests/unit/test_agent_orchestration.py`. Keep Feature 004's dedicated business workflows out of scope.
+- [X] T008 [US3] Implement discovered-schema argument validation and missing-context clarification in `src/hr_agent/agent.py`; reject invalid arguments and ask for required identifiers/details instead of guessing, with tests in `tests/unit/test_agent_validation.py`.
+- [X] T009 [US4] Implement evidence-grounded synthesis and citation/limitation handling in `src/hr_agent/agent.py`; cite policy claims from `search_policy_documents`, ground structured claims in MCP results, and report absent, incomplete, or conflicting evidence without inventing a resolution, with tests in `tests/unit/test_agent_evidence.py`.
+- [X] T010 [US3] Implement MCP tool error, timeout, and valid `not_found`/`indeterminate` handling in `src/hr_agent/agent.py` and `src/hr_agent/errors.py`; do not automatically retry failed MCP tool calls, surface failures clearly, and allow a subsequent user request to initiate a fresh call. Return partial answers only when remaining evidence supports them and test failure, no automatic reissue, and subsequent-request retry behavior in `tests/unit/test_agent_errors.py`.
 
 ## Milestone 3: Safety and Hardening (4 tasks)
 
@@ -111,6 +111,22 @@ stdio MCP integration test **1 passed**; complete pytest suite **318 passed, 1 s
 failed**; Ruff **passed**. That earlier suite skipped the opt-in live provider check; the user
 subsequently ran it with Groq `openai/gpt-oss-20b` and reported **1 passed in 2.95s**.
 These results do not mark the full Feature 003 requirements Verified.
+
+## Milestone 2 Execution Evidence
+
+| Task | Implementation and verification evidence |
+|---|---|
+| T007 | `tests/unit/test_agent_orchestration.py` exercises two LLM-selected sequential sequences: employee-profile lookup then policy search, and policy search then employee-profile lookup. Each result is passed to the following model turn; discovered schemas are used and execution remains within the configured call bound. |
+| T008 | `tests/unit/test_agent_validation.py` verifies that a missing employee identifier yields a clarification without an MCP call and that schema-invalid arguments are rejected before invocation. |
+| T009 | `tests/unit/test_agent_evidence.py` verifies policy candidate citations and structured-result references are aggregated, conflicting candidate excerpts are both supplied to synthesis, and missing policy or employee evidence is reported as a limitation rather than a supported finding. |
+| T010 | `tests/unit/test_agent_errors.py` verifies transport failures and timeouts are surfaced, a repeated failed call is not reissued within the request, and a new request can retry. Failure envelopes are explicitly marked as errors and are not represented as successful MCP results. |
+
+Verification from the project `.venv`: focused Milestone 2 and vertical-slice tests
+**13 passed**; complete pytest suite **334 passed, 1 skipped, 0 failed** with
+`AGENT_RUN_PROVIDER_SMOKE=0`; `python -m ruff check .` **passed**. The skipped test is the
+opt-in live provider test; no live provider call was made. Pylance syntax checks reported no
+syntax errors in the changed Python files. These results do not mark the full Feature 003
+requirements Verified.
 
 ## Dependencies and Execution Order
 

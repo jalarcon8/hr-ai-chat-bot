@@ -156,16 +156,28 @@ def test_policy_request_uses_llm_selected_mcp_search_and_returns_citations():
 
 def test_policy_search_without_evidence_returns_limitation_not_a_claim():
     mcp_client = FakeMCPClient(_search_result([], status="not_found"))
-    llm_client = ScriptedLLM([_tool_completion({"question": "unknown policy"})])
+    llm_client = ScriptedLLM(
+        [
+            _tool_completion({"question": "unknown policy"}),
+            LLMCompletion(
+                content="No policy finding can be supported from the returned evidence.",
+                tool_call=None,
+                assistant_message={
+                    "role": "assistant",
+                    "content": "No policy finding can be supported from the returned evidence.",
+                },
+            ),
+        ]
+    )
 
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
         response = await agent.process_request("What is the unknown policy?")
         assert response.status == "partial"
         assert not response.citations
-        assert "No supporting policy evidence" in response.answer
-        assert response.evidence_limitations
-        assert len(llm_client.requests) == 1
+        assert "candidate evidence" in response.evidence_limitations
+        assert "Evidence limitations:" in response.answer
+        assert len(llm_client.requests) == 2
 
     asyncio.run(exercise())
 

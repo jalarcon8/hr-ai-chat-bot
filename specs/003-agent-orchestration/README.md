@@ -327,8 +327,7 @@ See [plan.md](plan.md) and [research.md](research.md) for implementation decisio
 
 ## Next Steps
 
-1. Obtain and review GitHub Actions results for the current Feature 003 revision on Ubuntu and Windows.
-2. Keep Feature 004-specific business workflows outside Feature 003.
+1. Keep Feature 004-specific business workflows outside Feature 003 unless separately authorized.
 
 ---
 
@@ -343,8 +342,8 @@ See [plan.md](plan.md) and [research.md](research.md) for implementation decisio
 | Implementation Plan | ✓ Complete | 6 phases, acceptance criteria |
 | Design Decisions | ✓ Complete | Resolved ambiguities, validation points |
 
-**Implementation Status:** Milestones 1-3 and Phase 4A are complete; Phase 4B local
-verification is in progress. Hosted CI for this branch remains to be verified.
+**Implementation Status:** Milestones 1-3 and Phase 4 are complete. Current-branch Ubuntu and
+Windows GitHub Actions verification passed; see `tasks.md` for the run and commit evidence.
 
 ---
 

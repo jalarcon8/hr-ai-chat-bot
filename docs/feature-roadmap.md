@@ -156,8 +156,8 @@ and verifies them rather than postponing all testing and documentation.
   Streamlit design provides a grader-accessible chat request flow and JSON health status,
   including MCP connectivity where feasible. If it cannot, propose the smallest compatible
   equivalent without silently introducing another deployed service.
-- **Review recommendation - source link:** The PDF is at
-  `docs/requirements/Quantic AI Agent project.pdf`, not the filename in the request or the
+- **Review recommendation - source link:** The markdown is at
+  `docs/requirements/quantic-project-requirements.md`, not the filename in the request or the
   path currently referenced by the constitution. Correct the constitution link separately
   after approval; this roadmap does not modify it.
 - **Ambiguity - corpus size:** The PDF describes approximately 5-20 documents totaling

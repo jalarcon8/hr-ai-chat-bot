@@ -17,7 +17,7 @@ feature development:
    - Maps Quantic requirements to their assigned features.
    - Tracks requirement implementation and verification.
 
-4. `docs/requirements/quantic-project-requirements.pdf`
+4. `docs/requirements/quantic-project-requirements.md`
    - Contains the original Quantic assignment requirements.
    - Serves as the authoritative source for assignment
      requirements.

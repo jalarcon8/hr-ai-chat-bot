@@ -22,8 +22,9 @@ integration, email delivery, UI, and deployment remain out of scope.
 platform compatibility, and security must be verified during implementation. SDK v2 has a
 breaking FastMCP rename; see [research.md](research.md).
 
-**Storage**: Existing F001 active FAISS snapshot; small version-controlled synthetic employee
-and PTO JSON files. No database or second index. Trace events use a configurable local sink.
+**Storage**: Existing F001 active FAISS snapshot; small version-controlled synthetic employee,
+PTO, and reviewed compliance-baseline JSON files. No database or second index. Trace events
+use a configurable local sink.
 
 **Testing**: pytest and Ruff; deterministic embedder and synthetic fixtures; real MCP stdio
 subprocess tests including discovery, all six calls, bad schemas, failures, and traces.
@@ -89,6 +90,7 @@ src/hr_mcp/
 data/
   employees.json
   pto.json
+  compliance-baselines/     # Versioned reviewed policy text and digest
 tests/
   test_mcp_tools.py
   test_mcp_stdio.py
@@ -115,37 +117,79 @@ policy changes, and client-side tracing of protocol and transport failures.
   no score is treated as semantic support. Section lookup uses the existing checksum-verified
   active metadata via one isolated adapter; it matches full document and section IDs, validates
   fields, and retains exact snippets and a single generation ID.
-- For the initial compliance check, use caller-supplied approval status and the reviewed
-  `HR-004` section 2.2. Reconstruct the complete section only from overlapping/adjacent
-  indexed excerpts and compare its newline-normalized content with the reviewed baseline.
-  Changed, incomplete, or absent policy evidence produces `indeterminate`; a corrupt/missing
-  index is an operational error. This check is not overall remote-work eligibility.
+- For the initial compliance check, use caller-supplied structured approval status, authority,
+  format, approval timestamp, travel start timestamp and `no_other_approvals`; never authenticate
+  those assertions.
+  Evaluate written People Operations approval strictly before travel as defined in the
+  contract, allowing a disqualified candidate to determine an unmet requirement only when the
+  caller also asserts no other approval was granted.
+  Require the approved
+  document-level baseline for complete HR-004 and HR-001 in [data-model.md](data-model.md).
+  Bind each complete source to the same F001 snapshot via its raw content hash, then compare
+  its UTF-8/LF/NFC canonical digest to the versioned pin. Separately validate each pinned
+  document approval record and use the maintainer-reviewed activation policy in
+  [research.md](research.md); offline metadata checks do not authenticate the reviewer.
+  Preserve indexed HR-004 section
+  2.2 snippets for citations rather than using source files as evidence fallback. Missing,
+  invalid, unreviewed or mismatched baseline; missing, changed or unverifiable governing
+  documents; and absent or insufficient citations produce `indeterminate`; a corrupt/missing
+  index is an operational error. Full-document review and activation are pending. New governing
+  policy text requires a new baseline version and explicit review before activation. This check
+  is not overall remote-work eligibility.
 - Keep synthetic JSON deterministic and validated. Distinguish missing employee from missing
   PTO; malformed data is an error. Drafts are returned but never stored or sent.
-- Instrument the server at the MCP tool-request dispatch boundary, outside SDK schema
-  validation, so calls from any client are traced. Instrument the provided client for
-  discovery and client-side failures. Sanitize SDK logging and errors; record argument names,
-  never arbitrary values. Surface trace-sink failures.
+- Use one server tool-request dispatch adapter for validation, error classification, and
+  tracing, after SDK request-envelope acceptance and before application argument validation.
+  Validate advertised schemas and strict input models before invoking handlers and
+  return machine-readable error envelopes; bypass SDK tool-input validation that would consume
+  error types while preserving FastMCP discovery. Instrument the provided client for discovery
+  and client-side failures. Sanitize SDK logging and errors; record argument names, never
+  arbitrary values. The client preserves reliable structured classifications and otherwise
+  reports `UNCLASSIFIED_ERROR` with no asserted origin, without interpreting messages or missing
+  traces. Persist required traces before returning tool success; if persistence fails, surface
+  an operational error without requiring a trace of the failed write. Use no secondary sink or
+  retry infrastructure.
 - Offer planned `--discover` and `--example TOOL_NAME` client commands documented in
   [quickstart.md](quickstart.md). They launch the server using stdio; no long-running server
   is assumed. The example environment explicitly passes only required nonsecret settings.
+- Document the implemented MCP client/server architecture, F001 and synthetic-data connections,
+  transport, discovery and invocation in the README and linked quickstart and tool contract.
+  Keep the tool schemas in the contract and link to it rather than duplicating them. Describe
+  the provided client as implemented and the agent integration as future work.
 
 ### Verification and acceptance
 
 1. Contract tests exercise required/default/invalid inputs and all success statuses through
-   MCP, including unsupported checks, missing/unknown approval, empty retrieval, missing
-   records, and changed/incomplete policy evidence.
+   MCP, including unsupported checks, timely, late, equal-time, verbal, wrong-authority,
+   missing and unknown approval facts, equivalent timezone offsets, empty retrieval, missing
+   records, complete governing-document changes, added subsections, unrelated documents,
+   baseline integrity and review status, and normalization equivalence without discarding other
+   characters.
 2. Verify provenance and exact excerpts for search and section lookup, including active
    generation changes and corrupt snapshots. Do not silently fall back to current source files.
-3. Use a subprocess stdio test with deterministic F001 doubles and isolated synthetic data;
-   discover exactly six tools, call each, interrupt transport, and verify `isError` and client
-   errors. Server tracing must cover schema errors occurring before tool execution, including
-   calls from a raw SDK client; the provided client traces failed connections and discovery.
+3. Use standard and raw MCP clients with deterministic F001 doubles and isolated synthetic
+   data; discover exactly six tools, call each, interrupt transport, and verify `isError`,
+   structured classifications, and client errors. Verify invalid input is rejected before the
+   handler, and ambiguous errors become client-side `UNCLASSIFIED_ERROR` without an asserted
+   origin or inference from error text or missing traces. The protocol-only discovery slice may
+   run with isolated handlers first; adapter-dependent integration tests run only after the
+   persistent sink and server adapter are implemented, and client-side error and trace tests
+   run after the corresponding client instrumentation.
+   Server tracing covers invocations reaching the adapter, including pre-handler argument
+   errors; raw malformed protocol requests rejected before dispatch are not guaranteed server
+   execution traces. The provided client separately traces protocol failures it observes and
+   failed connections and discovery. Include a subprocess stdio test.
 4. Assert no raw questions, employee records, draft text, injected secrets, or SDK request
-   bodies appear in logs; test a failing trace sink. Confirm no email/network actions or data
-   mutation.
+   bodies appear in logs. Verify persisted traces with an operational sink; simulate server and
+   client trace persistence failures and verify explicit errors and no successful tool result,
+   without requiring a persisted trace of the failed write. Confirm no email/network actions or
+   data mutation.
 5. Run Ruff and the complete pytest suite in Python 3.11 on Windows and Linux; separately
    document an optional real-embedding smoke test and any dependency or resource limits.
+6. Follow the implemented documentation to launch the server via the provided client, discover
+   all six tools, compare their names, descriptions and schemas with the contract, and invoke a
+   documented synthetic example over MCP. Compare the architecture and transport description
+   with the implementation and record the commands and results or unverified limitations.
 
 ## Requirement Mapping and Deferred Ownership
 
@@ -153,7 +197,7 @@ policy changes, and client-side tracing of protocol and transport failures.
 |---|---|
 | QR-002, QR-052 | Fictional JSON records, checked-in MCP code and deterministic fixtures. |
 | QR-023, QR-024, QR-025 | FastMCP stdio server, six defined tools, real client discovery and invocation. |
-| QR-027 | Contracts, quickstart and implementation README document schemas, architecture, transport, discovery and calls. |
+| QR-027 | FR-010 and SC-005/SC-007; T028 updates linked implementation documentation and T032 verifies architecture, live discovery, schemas and an example invocation. F003 documents its actual agent-client integration. |
 | QR-020, QR-021, QR-022 | Redacted client traces, explicit no-result/errors, safe mock-only actions; full agent behavior remains F003/F004. |
 | QR-018, QR-026 | F002 supplies real protocol client; agent selection and agent-driven calls remain F003. |
 | QR-003-QR-005, QR-007 | Reproducible installation, local docs, bounded resources, environment secrets; final hosting and full setup ownership remains F006. |
@@ -170,8 +214,10 @@ traceability statuses and governance documents are not changed by this plan.
   changes; a public F001 interface requires separate approval rather than silent source edits.
 - Existing F001 snapshot validation does not validate all chunk fields; the adapter must
   validate fields, ranges, and document association before returning evidence.
-- The reviewed compliance baseline intentionally requires review after any section change;
-  the initial rule cannot decide other policies or legal exceptions.
+- The document-level compliance baseline requires explicit full-document review and activation;
+  verified source files must remain available and match the active snapshot. The fixed governing
+  set requires reassessment if another policy is identified; the rule cannot decide legal
+  exceptions or overall eligibility.
 - Default SDK logs and exception text may expose inputs; restrict logging and sanitize
   outputs before recording traces. Protocol stdout is reserved for MCP.
 - Instrumenting FastMCP's request-dispatch boundary may require an isolated dependency on

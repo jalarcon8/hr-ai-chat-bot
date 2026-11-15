@@ -162,7 +162,22 @@ Given that feature description, do this:
 
 7. Write the specification to SPEC_FILE using the template structure, replacing placeholders with concrete details derived from the feature description (arguments) while preserving section order and headings.
 
-8. **Specification Quality Validation**: After writing the initial spec, validate it against quality criteria:
+
+8. **Project Requirements Traceability**: After writing the initial specification, establish explicit traceability to the project-level assignment requirements:
+
+   - Read the project constitution and project-level assignment requirements.
+   - Identify all assignment requirements (QR identifiers) applicable to the feature.
+   - Add an "Assignment Requirements Traceability" section to SPEC_FILE mapping:
+     - Assignment requirement (QR)
+     - Functional requirement(s) (FR)
+     - Success criteria (SC)
+   - Ensure every applicable QR maps to at least one FR and appropriate measurable SC.
+   - Reuse existing identifiers; do not invent QR identifiers or force unsupported mappings.
+   - Identify and report any missing or incomplete coverage.
+   - Maintain consistency with the project-level requirements traceability matrix.
+   - Treat missing or incomplete traceability as a specification quality validation failure.
+
+9. **Specification Quality Validation**: After writing the initial spec and establishing requirements traceability, validate it against quality criteria:
 
    a. **Create Spec Quality Checklist**: Generate a checklist file at `SPECIFY_FEATURE_DIRECTORY/checklists/requirements.md` using the checklist template structure with these validation items:
 
@@ -190,6 +205,7 @@ Given that feature description, do this:
       - [ ] Edge cases are identified
       - [ ] Scope is clearly bounded
       - [ ] Dependencies and assumptions identified
+      - [ ] All applicable project-level assignment requirements (QR) are explicitly mapped to functional requirements (FR) and measurable success criteria (SC).
 
       ## Feature Readiness
 

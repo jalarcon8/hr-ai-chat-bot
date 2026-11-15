@@ -1,0 +1,26 @@
+[
+  {
+    "employee_id": "TEST-001",
+    "name": "Taylor Fixture",
+    "role": "Analyst",
+    "department": "Operations",
+    "work_arrangement": "hybrid",
+    "work_state": "CA"
+  },
+  {
+    "employee_id": "TEST-002",
+    "name": "Jordan Fixture",
+    "role": "Specialist",
+    "department": "Support",
+    "work_arrangement": "remote",
+    "work_state": "OR"
+  },
+  {
+    "employee_id": "TEST-003",
+    "name": "Casey Fixture",
+    "role": "Coordinator",
+    "department": "Operations",
+    "work_arrangement": "office",
+    "work_state": "CA"
+  }
+]

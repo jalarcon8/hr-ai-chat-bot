@@ -1,10 +1,25 @@
 # Contract: MCP Tools
 
-These are proposed implementation contracts, not an assertion that the tools already exist.
-All six are exposed by one FastMCP server and invoked via MCP stdio. Required strings must
+All six tools are implemented by one FastMCP server and invoked via MCP stdio. Required strings must
 be nonblank; integers must not be booleans. Reject unknown arguments, invalid types, unsupported
 enums and invalid values as MCP tool errors. Optional `supporting_details`, when supplied, is
-a string. Exact JSON schemas and SDK serialization are verified against actual tool discovery.
+a string. The full SDK-generated JSON schemas are available through tool discovery; the input
+properties, defaults and descriptions are summarized below.
+
+## Discovery: descriptions and input schemas
+
+Each input is an object with no additional properties. A required nonblank string has at least
+one non-whitespace character. The optional compliance facts object also rejects additional
+properties; its fields and validation are specified below.
+
+| Tool | Published description | Input properties (required unless marked optional) |
+|---|---|---|
+| `search_policy_documents` | Find ranked candidate excerpts from the fictional policy index. | `question`: nonblank string; `k`: optional positive integer, default `5` |
+| `get_policy_section` | Get indexed excerpts for an exact document and section. | `document_id`, `section`: nonblank strings |
+| `lookup_employee_profile` | Look up a fictional employee profile. | `employee_id`: nonblank string |
+| `check_pto_balance` | Look up a fictional employee's PTO balance. | `employee_id`: nonblank string |
+| `check_policy_compliance` | Evaluate the bounded prior-approval check using caller-supplied facts. | `check_id`: string constant `out_of_state_prior_approval`; `approval_facts`: optional object or null, default null |
+| `draft_hr_email` | Draft a fictional HR email without sending or storing it. | `recipient_name`, `purpose`: nonblank strings; `supporting_details`: optional string, default empty string |
 
 ## Successful result envelope
 

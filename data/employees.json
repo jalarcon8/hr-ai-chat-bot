@@ -1,0 +1,26 @@
+[
+  {
+    "employee_id": "SYN-001",
+    "name": "Alex Example",
+    "role": "Analyst",
+    "department": "Operations",
+    "work_arrangement": "hybrid",
+    "work_state": "CA"
+  },
+  {
+    "employee_id": "SYN-002",
+    "name": "Morgan Sample",
+    "role": "Specialist",
+    "department": "Support",
+    "work_arrangement": "remote",
+    "work_state": "OR"
+  },
+  {
+    "employee_id": "SYN-003",
+    "name": "Rowan Example",
+    "role": "Coordinator",
+    "department": "Operations",
+    "work_arrangement": "office",
+    "work_state": "CA"
+  }
+]

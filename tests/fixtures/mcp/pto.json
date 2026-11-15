@@ -1,0 +1,12 @@
+[
+  {
+    "employee_id": "TEST-001",
+    "available_hours": 40,
+    "as_of": "2026-01-01"
+  },
+  {
+    "employee_id": "TEST-003",
+    "available_hours": 0,
+    "as_of": "2026-01-01"
+  }
+]

@@ -2,23 +2,22 @@
 
 import asyncio
 import json
-import os
 
 import pytest
 from jsonschema import Draft202012Validator, ValidationError
 
-from hr_agent.config import AgentConfig
+from hr_agent.config import AgentConfig, get_agent_setting
 from hr_agent.errors import AgentRuntimeError
 from hr_agent.llm import GroqLLMClient, mcp_tools_to_provider
 from tests.fixtures.mcp.harness import build_context, connect
 
 
 def test_configured_provider_model_supports_tool_calling(tmp_path):
-    if os.getenv("AGENT_RUN_PROVIDER_SMOKE") != "1":
+    if get_agent_setting("AGENT_RUN_PROVIDER_SMOKE") != "1":
         pytest.skip("Set AGENT_RUN_PROVIDER_SMOKE=1 to run the live provider check.")
-    if not os.getenv("GROQ_API_KEY"):
+    if not get_agent_setting("GROQ_API_KEY"):
         pytest.skip("BLOCKED: GROQ_API_KEY is not configured.")
-    if os.getenv("AGENT_MODEL_PROVIDER", "groq").lower() != "groq":
+    if AgentConfig.from_environment().model_provider.lower() != "groq":
         pytest.fail("Configured provider is not supported by the Milestone 1 Groq adapter.")
 
     config = AgentConfig.from_environment()

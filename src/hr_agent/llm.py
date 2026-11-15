@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import os
 from collections.abc import Sequence
 from copy import deepcopy
 from typing import Any
@@ -11,7 +10,7 @@ from typing import Any
 from groq import AsyncGroq
 from mcp.types import Tool
 
-from .config import AgentConfig
+from .config import AgentConfig, get_agent_setting
 from .errors import AgentRuntimeError
 from .types import LLMCompletion, LLMToolCall
 
@@ -48,7 +47,7 @@ class GroqLLMClient:
         if config.model_provider.lower() != "groq":
             raise AgentRuntimeError("unsupported_model_provider")
         if self._client is None:
-            api_key = os.getenv("GROQ_API_KEY")
+            api_key = get_agent_setting("GROQ_API_KEY")
             if not api_key:
                 raise AgentRuntimeError("missing_llm_credentials")
             self._client = AsyncGroq(api_key=api_key)

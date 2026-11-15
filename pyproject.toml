@@ -12,6 +12,7 @@ dependencies = [
     "groq==0.18.0",
     "mcp==1.28.1",
     "numpy==1.26.4",
+    "python-dotenv==1.2.4",
     "sentence-transformers==3.4.1",
 ]
 

@@ -7,8 +7,34 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import overload
+
+from dotenv import dotenv_values
 
 _DEFAULT_MODEL = "openai/gpt-oss-20b"
+
+
+@overload
+def get_agent_setting(*names: str, default: str) -> str: ...
+
+
+@overload
+def get_agent_setting(*names: str, default: None = None) -> str | None: ...
+
+
+def get_agent_setting(*names: str, default: str | None = None) -> str | None:
+    """Read process variables before local .env values without modifying os.environ."""
+    for name in names:
+        if name in os.environ:
+            return os.environ[name]
+    values = dotenv_values(".env", encoding="utf-8", interpolate=False)
+    for name in names:
+        if name in values:
+            value = values[name]
+            if value is None:
+                raise ValueError(f"{name} must have a value in .env.")
+            return value
+    return default
 
 
 @dataclass(frozen=True)
@@ -40,14 +66,14 @@ class AgentConfig:
     @classmethod
     def from_environment(cls) -> AgentConfig:
         try:
-            temperature = float(os.getenv("AGENT_TEMPERATURE", "0"))
-            max_tokens = int(os.getenv("AGENT_MAX_TOKENS", "1024"))
-            top_k = int(os.getenv("AGENT_TOP_K", "5"))
-            max_tool_calls = int(os.getenv("AGENT_MAX_TOOL_CALLS", "3"))
+            temperature = float(get_agent_setting("AGENT_TEMPERATURE", default="0"))
+            max_tokens = int(get_agent_setting("AGENT_MAX_TOKENS", default="1024"))
+            top_k = int(get_agent_setting("AGENT_TOP_K", default="5"))
+            max_tool_calls = int(get_agent_setting("AGENT_MAX_TOOL_CALLS", default="3"))
         except ValueError as exc:
             raise ValueError("Agent numeric environment settings are invalid.") from exc
 
-        raw_args = os.getenv("AGENT_MCP_SERVER_ARGS")
+        raw_args = get_agent_setting("AGENT_MCP_SERVER_ARGS")
         if raw_args is None:
             server_args = ("-m", "hr_mcp.server")
         else:
@@ -61,18 +87,19 @@ class AgentConfig:
                 raise ValueError("AGENT_MCP_SERVER_ARGS must be a JSON string array.")
             server_args = tuple(parsed_args)
 
-        raw_trace_path = os.getenv("AGENT_TRACE_PATH")
+        raw_trace_path = get_agent_setting("AGENT_TRACE_PATH")
         return cls(
-            model_provider=os.getenv("AGENT_MODEL_PROVIDER", "groq"),
-            model_name=os.getenv(
+            model_provider=get_agent_setting("AGENT_MODEL_PROVIDER", default="groq"),
+            model_name=get_agent_setting(
                 "AGENT_MODEL_NAME",
-                os.getenv("GROQ_MODEL", _DEFAULT_MODEL),
+                "GROQ_MODEL",
+                default=_DEFAULT_MODEL,
             ),
             temperature=temperature,
             max_tokens=max_tokens,
             top_k=top_k,
             max_tool_calls=max_tool_calls,
-            mcp_server_command=os.getenv("AGENT_MCP_SERVER_COMMAND", sys.executable),
+            mcp_server_command=get_agent_setting("AGENT_MCP_SERVER_COMMAND", default=sys.executable),
             mcp_server_args=server_args,
             trace_path=Path(raw_trace_path) if raw_trace_path else None,
         )

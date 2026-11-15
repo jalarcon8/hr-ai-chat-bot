@@ -10,7 +10,8 @@ from hr_agent.errors import AgentRuntimeError
 from hr_agent.llm import GroqLLMClient, mcp_tools_to_provider
 
 
-def test_model_config_prefers_agent_override_then_groq_model(monkeypatch):
+def test_model_config_prefers_agent_override_then_groq_model(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("AGENT_MODEL_NAME", raising=False)
     monkeypatch.delenv("GROQ_MODEL", raising=False)
     assert AgentConfig.from_environment().model_name == AgentConfig().model_name
@@ -167,7 +168,8 @@ def test_groq_adapter_rejects_multiple_tool_calls(monkeypatch):
     asyncio.run(exercise())
 
 
-def test_groq_adapter_requires_environment_credential(monkeypatch):
+def test_groq_adapter_requires_environment_credential(monkeypatch, tmp_path):
+    monkeypatch.chdir(tmp_path)
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
 
     async def exercise():

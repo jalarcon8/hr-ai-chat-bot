@@ -104,6 +104,43 @@ The original Quantic assignment document remains the authoritative source for ma
 
 This approach combines Spec Kit's structured feature development process with project-level planning and requirements verification, providing a controlled path from assignment requirements to a tested, deployable AI application.
 
+## Local configuration and tests
+
+From the project root, install Python 3.11 dependencies and create a local configuration:
+
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\python -m pip install -e ".[dev]"
+Copy-Item .env.example .env
+```
+
+Set `GROQ_API_KEY` in `.env` only when using the Groq provider. Never commit `.env` or
+share the key. Feature 003 reads `.env` from the current working directory without modifying
+process variables; explicitly set environment variables take precedence, including `GROQ_MODEL`
+over a model set only in `.env`. The model is selected by `AGENT_MODEL_NAME`, then `GROQ_MODEL`,
+and defaults to `openai/gpt-oss-20b` when neither is set. The `.env` configuration applies to
+Feature 003; Feature 001 and Feature 002 retain their existing environment-variable behavior.
+
+Run routine tests and linting without Groq credentials or network calls to the provider:
+
+```powershell
+.\.venv\Scripts\python -m pytest -q
+.\.venv\Scripts\python -m ruff check .
+```
+
+The live-provider test is disabled by default. To run it intentionally, configure a valid key
+and model in `.env`, then opt in for this PowerShell session:
+
+```powershell
+$env:AGENT_RUN_PROVIDER_SMOKE = "1"
+.\.venv\Scripts\python -m pytest tests/integration/test_agent_provider.py -q -rs
+Remove-Item Env:\AGENT_RUN_PROVIDER_SMOKE
+```
+
+`AGENT_RUN_PROVIDER_SMOKE=1` may instead be set in `.env`, but then ordinary pytest runs also
+invoke the live provider. Leave it at `0` for routine tests and CI. The live test uses synthetic
+policy fixtures, requires provider access and quota, and is skipped when no key is configured.
+
 ## Feature 001: Local HR Policy RAG
 
 F001 provides a synchronous Python interface over the fictional Markdown and TXT policies in

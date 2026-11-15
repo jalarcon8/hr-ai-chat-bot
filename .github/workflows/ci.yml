@@ -37,5 +37,15 @@ jobs:
       - name: Check MCP imports
         run: python -c "import hr_mcp.client, hr_mcp.server"
 
+      - name: Check Feature 003 import
+        run: python -c "import hr_agent"
+
+      - name: Run Feature 003 MCP integration
+        run: python -m pytest -q tests/integration/test_agent_mcp.py
+        env:
+          AGENT_RUN_PROVIDER_SMOKE: "0"
+
       - name: Run pytest
         run: python -m pytest -q
+        env:
+          AGENT_RUN_PROVIDER_SMOKE: "0"

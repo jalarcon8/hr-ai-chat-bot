@@ -1,7 +1,7 @@
 # Executive Summary: Feature 003 Specification
 
 **Date:** 2026-11-15
-**Status:** DRAFT - Ready for Implementation
+**Implementation Status:** Milestones 1-3 and Phase 4A are complete; Phase 4B is in progress.
 **Branch:** `003-agent-orchestration`
 
 ---
@@ -73,10 +73,11 @@ created under `specs/003-agent-orchestration/` with the following documents:
 ### Scope: What F003 Does
 
 ✓ **Interpret** natural-language HR requests
-✓ **Route** to Feature 001 (RAG), Feature 002 (MCP), or both
-✓ **Orchestrate** multi-step tool calls with proper sequencing
+✓ **Select** tools through LLM-native tool calling from the dynamically discovered Feature 002 MCP catalog
+✓ **Orchestrate** bounded, sequential tool calls, returning each result to the next model turn
+✓ **Retrieve policy evidence** only through Feature 002's `search_policy_documents` MCP tool
 ✓ **Synthesize** grounded responses with citations
-✓ **Trace** all decisions with redacted operational logs
+✓ **Trace** observable tool choices and outcomes with allowlisted operational logs
 ✓ **Safeguard** state-changing operations with user confirmation
 
 ### Scope: What F003 Does NOT Do
@@ -84,7 +85,8 @@ created under `specs/003-agent-orchestration/` with the following documents:
 ✗ Real HR system integration (all mock)
 ✗ Web interface (Feature 005)
 ✗ Workflow-specific business logic (Feature 004)
-✗ LLM-based tool selection (deterministic routing instead)
+✗ Direct Feature 001 retrieval calls or `get_policy_section` as an alternate policy-evidence path
+✗ Hardcoded intent routing or a separate workflow/orchestration framework
 ✗ Conversation history persistence
 
 ### Core Requirements (Mandatory)
@@ -106,72 +108,35 @@ created under `specs/003-agent-orchestration/` with the following documents:
 ## How F003 Fits Into the Project
 
 ```
-F001: Policy RAG ─────┐
-                      ├─→ F003: Agent Orchestration ─┐
-F002: MCP Tools ──────┘                              ├─→ F004: Workflows ─→ F005: Chat UI
-                                                     └─→ F006: Evaluation & Deployment
+User Request
+    ↓
+F003 HRAgent ⇄ LLM (native tool selection; one tool per turn; bounded sequential loop)
+    ↓
+F002 MCPClient ⇄ F002 MCP Server
+                    ├─ search_policy_documents → F001 policy retrieval
+                    ├─ synthetic employee/PTO/compliance tools
+                    └─ draft_hr_email (proposal + caller-carried confirmation; never sends)
+    ↓
+Grounded answer, citations, limitations, and allowlisted operational trace
 ```
 
-- **Depends On:** F001 (retrieval) and F002 (MCP tools) must be stable
+- **Depends On:** F002 MCP tools, which provide the only F003 path to F001 policy retrieval
 - **Enables:** F004 (workflow-specific logic) and F005 (web UI)
 - **Owned By:** QR-018, QR-020, QR-021, QR-022, QR-026
 
 ---
 
-## Readiness for Implementation
+## Implementation Status and Next Steps
 
-### ✓ Complete
-
-- [x] All user stories and acceptance scenarios defined
-- [x] Functional requirements documented with traceability
-- [x] Data models and contracts specified
-- [x] Python interface signatures finalized
-- [x] Implementation plan with 6 phases and time estimates
-- [x] Design decisions documented (why choices were made)
-- [x] Ambiguities identified and assumptions recorded
-- [x] Quickstart guide and troubleshooting included
-- [x] Testing strategy defined (unit, integration, acceptance)
-
-### ⚠ Pending (Blocking Implementation)
-
-- [ ] Clarification on 6 design ambiguities (see research.md)
-  - Out-of-scope request boundaries
-  - Conflicting evidence resolution strategy
-  - Partial workflow cancellation handling
-  - Citation accuracy standards
-  - Tool retry and backoff strategy
-  - Dynamic tool discovery after init
-
-### ⚠ Pending (Non-Blocking, Can Proceed)
-
-- [ ] F001 and F002 marked as stable (not strictly needed; can integrate as they stabilize)
-- [ ] Final approval from project owner and stakeholders
-
----
-
-## Next Steps
-
-### Immediate (This Week)
-
-1. **Review Specification:** Project owner reviews all 8 documents.
-2. **Clarify Ambiguities:** Address the 6 pending ambiguities (see research.md).
-3. **Approval:** Sign off that specification is ready for implementation.
-
-### Week 2-3 (Implementation Planning)
-
-1. **Create GitHub Issues:** Convert tasks.md into GitHub issues with labels and milestones.
-2. **Assign Team:** Allocate developers to each phase.
-3. **Dependency Validation:** Confirm F001 and F002 are stable.
-4. **Tool Setup:** Validate LLM model availability, MCP compatibility.
-
-### Week 4+ (Implementation)
-
-1. **Phase 1:** Agent foundation (client validation, MCP discovery, intent classification)
-2. **Phase 2:** Tool invocation and orchestration
-3. **Phase 3:** Response synthesis and grounding
-4. **Phase 4:** Safety (confirmations, mock operations)
-5. **Phase 5:** Configuration and reproducibility
-6. **Phase 6:** Integration testing and validation
+- **Milestones 1-3:** Complete (T001-T014).
+- **Phase 4A:** Complete (T015-T016), including deterministic acceptance coverage and actual
+  protocol invocation of five distinct existing Feature 002 tools.
+- **Phase 4B:** T017 and local T018 work are complete, including documentation reconciliation,
+  evidence-backed traceability updates, and local checks. T018 remains open pending hosted CI
+  results for the current branch.
+- **Hosted CI:** The latest successful repository run is on `main` before Feature 003 was
+  included. No GitHub Actions run exists for the current Feature 003 branch; that distinction
+  is recorded in `tasks.md`.
 
 ---
 
@@ -179,11 +144,10 @@ F002: MCP Tools ──────┘                              ├─→ F00
 
 | Risk | Mitigation | Status |
 |---|---|---|
-| LLM model unavailable | Validate in planning; use fallback model | Planned |
-| MCP server disconnects | Health checks, error recovery | Specified |
-| F001/F002 not stable | Start with mocks; integrate incrementally | Specified |
-| Ambiguous requirements | Document assumptions; seek clarification | In Progress |
-| Tool schema evolution | Validate at use time; report mismatches | Specified |
+| LLM model unavailable | Surface an explicit provider error; routine tests use deterministic doubles | Specified |
+| MCP server disconnects | Surface discovery and transport failures explicitly; no silent direct-call fallback | Verified locally |
+| Upstream tool schema changes | Refresh MCP discovery per request and validate arguments against live schemas | Verified locally |
+| Ambiguous requirements | Record resolved behavior and remaining scope in `research.md` and the interface contract | Documented |
 
 ---
 
@@ -193,10 +157,10 @@ F002: MCP Tools ──────┘                              ├─→ F00
 two developers)
 
 **Dependencies:**
-- Python 3.8+
-- MCP client library (FastMCP or compatible)
-- LLM access (Groq, OpenRouter, or local model)
-- Features 001 and 002 implementations
+- Python 3.11
+- Existing asynchronous Feature 002 MCP client/server
+- Groq tool-calling access for live requests; deterministic test doubles for routine tests
+- Feature 001 retrieval accessed through Feature 002 MCP policy search
 
 **Infrastructure:** None (single-service deployment; no additional services required)
 
@@ -218,10 +182,10 @@ two developers)
 
 | Criterion | Test Method |
 |---|---|
-| SC-001: Agent initializes with F001 and F002 | Unit test: HRAgent.__init__() |
-| SC-002: Policy-only requests don't call MCP | Acceptance test: policy question |
+| SC-001: Agent initializes with F002 and discovers its tools | Unit and stdio MCP integration tests |
+| SC-002: Policy-only requests use only policy-search MCP | Three deterministic acceptance requests |
 | SC-003: Data requests invoke MCP correctly | Acceptance test: employee lookup |
-| SC-004: Multi-step requests invoke both | Acceptance test: PTO/remote-work workflow |
+| SC-004: Multi-step requests invoke policy and structured tools sequentially | Three deterministic sequences and actual-protocol integration |
 | SC-005: Ambiguous requests trigger clarification | Unit test: intent classifier |
 | SC-006: Evidence limitations are clear | Unit test: evidence validation |
 | SC-007: Tool failures are surfaced | Unit test: error handling |
@@ -255,13 +219,10 @@ two developers)
 ### Specification Author
 - **Name:** Copilot
 - **Date:** 2026-11-15
-- **Status:** DRAFT - Ready for Review and Approval
+- **Status:** Approved specification; implementation verification is in progress.
 
-### Review and Approval (Pending)
-- **Project Owner:** [TBD]
-- **Review Date:** [TBD]
-- **Approval Date:** [TBD]
-- **Comments:** [TBD]
+### Review and Approval
+- **Project Owner:** Feature 003 specification approved; Phase 4B (T017-T018) authorized.
 
 ---
 
@@ -280,9 +241,10 @@ For questions about the specification:
 
 | Version | Date | Change | Status |
 |---|---|---|---|
-| 1.0 | 2026-11-15 | Initial specification | Draft |
+| 1.0 | 2026-11-15 | Initial specification | Approved; implementation in progress |
 
 ---
 
-**This specification is comprehensive, well-structured, and ready for implementation upon 
-approval and clarification of outstanding ambiguities.**
+**This approved specification is implemented through Phase 4A. Phase 4B documentation and
+local verification are complete; T018 remains open pending current-branch Ubuntu and Windows
+GitHub Actions results.**

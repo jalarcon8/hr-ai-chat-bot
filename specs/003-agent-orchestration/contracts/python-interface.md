@@ -17,6 +17,14 @@ class HRAgent:
         config: AgentConfig | None = None,
     ) -> None: ...
 
+    @classmethod
+    async def create(
+        cls,
+        mcp_client: MCPClient,
+        llm_client: LLMClient,
+        config: AgentConfig | None = None,
+    ) -> HRAgent: ...
+
     async def process_request(
         self,
         user_input: str,
@@ -35,13 +43,20 @@ class HRAgent:
 ### Initialization
 
 - The caller opens the Feature 002 MCP client using its asynchronous context manager.
-- The agent validates the connected client and discovers the live MCP tool catalog through
-  `MCPClient.discover()`.
+- `await HRAgent.create(mcp_client, llm_client, config)` validates readiness and discovers the
+  live MCP tool catalog through `MCPClient.discover()`. Constructing `HRAgent` directly does not
+  perform discovery.
 - Before each request, the agent refreshes the catalog through MCP discovery so the model uses
   current tool definitions and schemas.
 - Discovery returns tool names, descriptions, and declared input schemas from the MCP server.
-- The agent adapts supported discovered definitions for the configured LLM provider; it does
-  not maintain duplicate argument schemas.
+- The agent offers only the supported discovered tools to the model:
+  `search_policy_documents`, `lookup_employee_profile`, `check_pto_balance`,
+  `check_policy_compliance`, and `draft_hr_email`. It validates each call against the live
+  schema and invokes it only through `MCPClient.call()`.
+- The LLM selects tools using native tool calling. The agent permits one call per model turn
+  and executes sequentially up to `max_tool_calls`.
+- Policy evidence is retrieved through `search_policy_documents` only; no direct Feature 001
+  call or `get_policy_section` evidence path is used.
 - Initialization failure is explicit. The agent does not fall back to direct Feature 001
   retrieval.
 
@@ -53,6 +68,8 @@ class HRAgent:
 - `context`: optional caller-carried context, including a pending confirmation proposal from a
   prior response. Feature 003 does not persist this context.
 - `options`: optional validated per-request overrides such as `top_k` or `max_tool_calls`.
+  Supported keys are `top_k`, `max_tool_calls`, and `max_tokens`; values must be positive
+  integers.
 
 **Behavior**
 
@@ -97,6 +114,22 @@ it. Failures are not represented as successful calls.
 - Unsupported action types are refused regardless of confirmation.
 - The agent stores no pending action or confirmation record. The caller passes the pending
   proposal back in `context`.
+- The confirmation key is scoped to the current `HRAgent` instance. Keep the instance alive
+  across proposal and confirmation; after an agent restart, prepare a new proposal.
+
+Example caller exchange:
+
+```python
+proposal = await agent.process_request("Draft a synthetic HR email.")
+if proposal.confirmation_required:
+    result = await agent.confirm_action(
+        proposal.action_id,
+        True,
+        {"pending_action": proposal.pending_action},
+    )
+```
+
+`pending_action` is caller-carried response data; Feature 003 does not persist it.
 
 **Raises**
 
@@ -108,23 +141,31 @@ it. Failures are not represented as successful calls.
 ### `AgentConfig`
 
 ```python
-@dataclass
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass(frozen=True)
 class AgentConfig:
-    model_provider: str
-    model_name: str
-    temperature: float
-    max_tokens: int
-    top_k: int
-    max_tool_calls: int
-    mcp_server_command: str
-    mcp_server_args: list[str]
-    trace_sink: TraceSink
+    model_provider: str = "groq"
+    model_name: str = "openai/gpt-oss-20b"
+    temperature: float = 0.0
+    max_tokens: int = 1024
+    top_k: int = 5
+    max_tool_calls: int = 3
+    mcp_server_command: str = sys.executable
+    mcp_server_args: tuple[str, ...] = ("-m", "hr_mcp.server")
+    trace_path: Path | None = None
 ```
 
-Values are validated and environment-configurable. Provider credentials are read from
-environment variables and are never included in config traces or logs. Defaults and supported
-environment variable names are documented in the quickstart. No retrieval-client, heuristic
-confidence, or confirmation-persistence configuration is exposed.
+Values are validated and environment-configurable. `from_environment()` reads
+`AGENT_MODEL_PROVIDER`, `AGENT_MODEL_NAME` (or `GROQ_MODEL`), `AGENT_TEMPERATURE`,
+`AGENT_MAX_TOKENS`, `AGENT_TOP_K`, `AGENT_MAX_TOOL_CALLS`, `AGENT_MCP_SERVER_COMMAND`,
+`AGENT_MCP_SERVER_ARGS` (a JSON string array), and `AGENT_TRACE_PATH`. `GROQ_API_KEY` is read
+by `GroqLLMClient`, not stored in `AgentConfig`. The current provider adapter supports Groq.
+When passing `mcp_server_args` to `MCPClient`, convert the tuple to a list. No direct-retrieval,
+heuristic-confidence, or confirmation-persistence configuration is exposed.
 
 ### `AgentResponse`
 
@@ -143,12 +184,12 @@ class AgentResponse:
     citations: list[Citation] = field(default_factory=list)
     evidence_limitations: str = ""
     tool_calls: list[ToolInvocationRecord] = field(default_factory=list)
-    operational_trace: OperationalTrace | None = None
+    operational_trace: OperationalTrace = field(default_factory=OperationalTrace)
     clarification_prompt: str | None = None
     confirmation_required: bool = False
     confirmation_prompt: str | None = None
     action_id: str | None = None
-    pending_action: dict[str, object] | None = None
+    pending_action: dict[str, Any] | None = None
     error_code: str | None = None
 ```
 
@@ -170,13 +211,17 @@ class AgentResponse:
 class Citation:
     source_type: Literal["policy_evidence", "tool_result"]
     source_id: str
-    section: str | None = None
-    snippet: str = ""
+    document_id: str
+    title: str
+    section: str | None
+    snippet: str
     claim: str = ""
+    chunk_id: str = ""
 ```
 
-Policy citations identify the document/title, optional section, and exact snippet returned by
-`search_policy_documents`. Tool citations identify the relevant F002 tool result.
+Policy citations identify the document ID, title, optional section, exact snippet, and chunk ID
+returned by `search_policy_documents`. Tool-result citations identify the relevant F002 result;
+`claim` is optional.
 
 ### `ToolInvocationRecord`
 
@@ -196,9 +241,10 @@ for MCP invocation and response generation but MUST NOT be written into operatio
 
 ### `OperationalTrace` and `TraceEvent`
 
-Each trace contains a request identifier, UTC timestamps, duration, and events. Events record
-observable intent category, selected tool, concise argument/result summaries, outcome category,
-source IDs/sections, and clarification/escalation/failure category.
+`OperationalTrace` contains `request_id`, UTC `started_at`, and `events`. Each event is an
+allowlisted dictionary describing observable intent, selected tool, argument/result summaries,
+outcome, evidence source references, or clarification/escalation/failure. The agent trace does
+not add a trace-level duration field.
 
 Trace data MUST exclude chain-of-thought, internal prompts, full raw user requests, credentials,
 full employee records, email bodies, and unrestricted tool outputs. Tool-selection summaries

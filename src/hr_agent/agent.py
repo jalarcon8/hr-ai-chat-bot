@@ -48,12 +48,14 @@ _SUPPORTED_TOOL_NAMES = {
     "search_policy_documents",
     "lookup_employee_profile",
     "check_pto_balance",
+    "check_policy_compliance",
     "draft_hr_email",
 }
 _ARGUMENT_NAMES = {
     "search_policy_documents": {"question", "k"},
     "lookup_employee_profile": {"employee_id"},
     "check_pto_balance": {"employee_id"},
+    "check_policy_compliance": {"check_id", "approval_facts"},
     "draft_hr_email": {"recipient_name", "purpose", "supporting_details"},
 }
 _ERROR_CODES = {
@@ -269,6 +271,7 @@ class HRAgent:
                 "search_policy_documents": "policy_question",
                 "lookup_employee_profile": "data_lookup",
                 "check_pto_balance": "data_lookup",
+                "check_policy_compliance": "compliance_check",
                 "draft_hr_email": "email_draft",
             }[tool_call.name]
             trace.events.append(
@@ -279,6 +282,7 @@ class HRAgent:
                     "decision": {
                         "policy_question": "policy_evidence_needed",
                         "data_lookup": "structured_data_needed",
+                        "compliance_check": "compliance_check_requested",
                         "email_draft": "draft_proposal_requested",
                     }[category],
                 }

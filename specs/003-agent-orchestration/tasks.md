@@ -74,10 +74,10 @@ Ruff and pytest pass in the existing Ubuntu/Windows CI matrix; the quickstart ac
 describes the implemented MCP-only policy path and confirmation behavior; QR coverage has
 evidence references and no requirement is marked Verified without evidence.
 
-- [ ] T015 Add the deterministic acceptance suite in `tests/test_agent_acceptance.py`; assert SC-002 through SC-010 thresholds (3 policy-only, 3 data lookups, at least 3 representative multi-step requests each combining `search_policy_documents` with at least one existing structured-data MCP tool, 2 clarification cases, 2 evidence-limitation cases, 2 tool-failure cases, trace fields/privacy, confirmation/refusal, and no automatic retry with a subsequent user request able to retry). Extend the actual-protocol integration scenario in `tests/integration/test_agent_mcp.py` to demonstrate successful invocation through `HRAgent` of at least five distinct existing Feature 002 MCP tools; discovery alone does not count. Do not use `get_policy_section` as an alternate policy-evidence path, and use `draft_hr_email` only within the approved confirmation flow. Keep Feature 004's dedicated business workflows out of scope; reuse focused test fixtures rather than duplicating their unit-test logic. Reference T006 for SC-001 discovery.
-- [ ] T016 [P] Extend the existing cross-platform workflow in `.github/workflows/ci.yml` to import the new `hr_agent` package and run the F003 MCP discovery/integration test on both existing Ubuntu and Windows matrix jobs; retain Ruff and full pytest execution without requiring live provider credentials.
-- [ ] T017 [P] Update `specs/003-agent-orchestration/quickstart.md` and `specs/003-agent-orchestration/contracts/python-interface.md` to match the implemented async API, environment configuration, MCP discovery/invocation, deterministic test commands, and caller-carried email confirmation behavior.
-- [ ] T018 Review the QR-to-task mapping in this file against `docs/requirements/traceability.md`, run `python -m ruff check .` and `python -m pytest`, and report test/CI evidence plus any recommended traceability status changes; do not edit the project-level matrix or mark a requirement Verified without evidence.
+- [X] T015 Add the deterministic acceptance suite in `tests/test_agent_acceptance.py`; assert SC-002 through SC-010 thresholds (3 policy-only, 3 data lookups, at least 3 representative multi-step requests each combining `search_policy_documents` with at least one existing structured-data MCP tool, 2 clarification cases, 2 evidence-limitation cases, 2 tool-failure cases, trace fields/privacy, confirmation/refusal, and no automatic retry with a subsequent user request able to retry). Extend the actual-protocol integration scenario in `tests/integration/test_agent_mcp.py` to demonstrate successful invocation through `HRAgent` of at least five distinct existing Feature 002 MCP tools; discovery alone does not count. Do not use `get_policy_section` as an alternate policy-evidence path, and use `draft_hr_email` only within the approved confirmation flow. Keep Feature 004's dedicated business workflows out of scope; reuse focused test fixtures rather than duplicating their unit-test logic. Reference T006 for SC-001 discovery.
+- [X] T016 [P] Extend the existing cross-platform workflow in `.github/workflows/ci.yml` to import the new `hr_agent` package and run the F003 MCP discovery/integration test on both existing Ubuntu and Windows matrix jobs; retain Ruff and full pytest execution without requiring live provider credentials.
+- [X] T017 [P] Update `specs/003-agent-orchestration/quickstart.md` and `specs/003-agent-orchestration/contracts/python-interface.md` to match the implemented async API, environment configuration, MCP discovery/invocation, deterministic test commands, and caller-carried email confirmation behavior. Also reconcile the feature overview in `README.md` and `00-SUMMARY.md`.
+- [ ] T018 Review the QR-to-task mapping in this file against `docs/requirements/traceability.md`; update the assigned QR-018, QR-020, QR-021, QR-022, and QR-026 rows using implementation and test evidence. Run `python -m ruff check .`, `python -m pytest`, and `git diff --check`; report local and hosted CI evidence. Do not mark requirements Verified without supporting evidence. Complete after current-branch Ubuntu and Windows GitHub Actions results are reviewed.
 
 ## Requirements Traceability
 
@@ -141,7 +141,25 @@ Focused safety/error tests: **15 passed**. Full pytest with `AGENT_RUN_PROVIDER_
 **346 passed, 1 skipped**; Ruff and `git diff --check` passed. No live provider call was made.
 The confirmation integrity key is held in the agent instance only; replacing that instance
 requires preparing a new proposal. These results do not mark Feature 003 requirements Verified;
-T015-T018 remain outstanding.
+after Phase 4A, T017-T018 remain outstanding.
+
+## Milestone 4A Execution Evidence
+
+| Task | Implementation and verification evidence |
+|---|---|
+| T015 | `tests/test_agent_acceptance.py` adds deterministic cases for 3 policy-only requests, 3 structured-data lookups, 3 policy-plus-data sequences, 2 missing-identifier clarifications, 2 evidence limitations, 2 tool failures, trace fields/privacy, confirmation/refusal, and suppressed same-request retry followed by a successful new request. `tests/integration/test_agent_mcp.py` invokes `search_policy_documents`, `lookup_employee_profile`, `check_pto_balance`, `check_policy_compliance`, and `draft_hr_email` through `HRAgent` and the real Feature 002 stdio MCP client. The draft is prepared and confirmed through the approved flow; the response states no email was sent. The test verifies all five protocol calls and sequential tool-result feedback. |
+| T016 | `.github/workflows/ci.yml` now imports `hr_agent` and runs the F003 MCP integration test explicitly in the existing Ubuntu/Windows matrix, retaining Ruff and full pytest. Routine pytest steps set `AGENT_RUN_PROVIDER_SMOKE=0`. Local Windows validation: package import passed; focused acceptance/orchestration/protocol tests **22 passed**; full pytest **365 passed, 1 skipped, 0 failed**; Ruff and `git diff --check` passed. At the end of Phase 4A, hosted Actions results had not yet been reviewed. |
+
+These results verify the listed acceptance scenarios locally; they do not constitute hosted CI
+evidence. At the end of Phase 4A, hosted CI had not yet been reviewed; Phase 4B review below
+found no run for the current branch.
+
+## Milestone 4B Execution Evidence
+
+| Task | Implementation and verification evidence |
+|---|---|
+| T017 | `quickstart.md` now documents the asynchronous `HRAgent.create`/`process_request` API, live MCP discovery and sequential execution, the MCP-only `search_policy_documents` policy path, environment defaults including `AGENT_TRACE_PATH`, tuple-to-list conversion for MCP server args, deterministic acceptance/protocol test commands, and the caller-carried confirmation exchange using the same agent instance. `contracts/python-interface.md` now matches the implemented `AgentConfig`, response/status, citation, trace, MCP argument, and confirmation types. The stale architecture descriptions in `README.md` and `00-SUMMARY.md` were corrected to describe LLM-native selection, dynamic MCP discovery, bounded sequential calls, and MCP-only policy retrieval. |
+| T018 | Updated only QR-018, QR-020, QR-021, QR-022, and QR-026 in `docs/requirements/traceability.md`, each with concrete implementation/test references. Local Windows validation with `AGENT_RUN_PROVIDER_SMOKE=0`: full pytest **365 passed, 1 skipped, 0 failed**; Ruff **passed**; `git diff --check` **passed**. The skipped test is the opt-in live-provider smoke test. GitHub Actions review found no run for branch `003-agent-orchestration`, so there are no current-change Ubuntu or Windows job results. Successful runs on `main` or the earlier Feature 002 branch do not validate this revision. T018 remains open until current-branch Ubuntu and Windows Actions results are available and reviewed. |
 
 ## Dependencies and Execution Order
 
@@ -153,7 +171,7 @@ T015-T018 remain outstanding.
 - **Milestone 3**: Starts after core orchestration. T011-T014 depend on the response/tool loop
   from Milestones 1-2.
 - **Milestone 4**: Starts after Milestone 3. T015 depends on the focused tests; T016 and T017
-  can proceed in parallel once interfaces stabilize; T018 is final.
+  can proceed in parallel once interfaces stabilize; T018 is final and requires hosted CI review.
 
 ## Parallel Opportunities
 
@@ -172,4 +190,6 @@ Milestone 4: T016 cross-platform CI || T017 quickstart/contract updates
 4. **Delivery**: Complete acceptance coverage, CI, documentation, and QR evidence review in
    Milestone 4.
 
-Do not begin implementation until this task list is approved through the project workflow.
+Phase 4B documentation and local verification are complete. T018 remains open pending current-
+branch Ubuntu and Windows GitHub Actions results. Do not start Feature 004 without explicit
+authorization.

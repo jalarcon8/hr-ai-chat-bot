@@ -6,7 +6,7 @@ This specification defines Feature 003 (Agent Orchestration) of the HR AI Chatbo
 It provides the functional and behavioral requirements for an LLM-based agent that interprets 
 user requests, orchestrates tool use, and generates grounded, cited responses.
 
-**Specification Status:** Draft - Ready for Implementation
+**Implementation Status:** Milestones 1-3 and Phase 4A are complete; Phase 4B is in progress.
 **Created:** 2026-11-15
 **Branch:** `003-agent-orchestration`
 
@@ -29,11 +29,12 @@ user requests, orchestrates tool use, and generates grounded, cited responses.
 
 Enable an LLM-based agent to:
 1. **Interpret** natural-language user requests and determine required capabilities.
-2. **Route** to Feature 001 (RAG retrieval), Feature 002 (MCP tools), or both.
-3. **Orchestrate** multi-step tool invocations with proper sequencing and error handling.
-4. **Synthesize** grounded responses with citations and clear evidence limitations.
-5. **Trace** all decisions and operations for auditing and debugging.
-6. **Safeguard** state-changing operations with explicit user confirmation.
+2. **Select** discovered Feature 002 MCP tools through LLM-native tool calling.
+3. **Orchestrate** bounded, sequential tool calls, returning each result to the next model turn.
+4. **Retrieve policy evidence** only through Feature 002's `search_policy_documents` tool.
+5. **Synthesize** grounded responses with citations and clear evidence limitations.
+6. **Trace** observable decisions and operations using allowlisted, privacy-safe summaries.
+7. **Safeguard** email-draft proposals with caller-carried, action-specific confirmation.
 
 ---
 
@@ -41,9 +42,10 @@ Enable an LLM-based agent to:
 
 ### In Scope ✓
 
-- Intent interpretation (heuristic-based; not LLM classification).
-- Dynamic tool discovery via MCP protocol.
-- Single-tool (retrieval only or MCP only) and multi-tool orchestration.
+- LLM interpretation and native tool selection from the dynamically discovered MCP catalog.
+- Sequential multi-tool orchestration with a configurable `max_tool_calls` bound.
+- Policy-only, structured-data, and combined requests through supported MCP tools.
+- Policy evidence retrieved only through `search_policy_documents`.
 - Citation grounding and evidence validation.
 - Graceful error handling and clarification requests.
 - Operational tracing with proper redaction.
@@ -56,7 +58,8 @@ Enable an LLM-based agent to:
 - Real HR system integration (all operations are mock).
 - Web interface (Feature 005).
 - Dedicated workflow implementations (Feature 004).
-- LLM-based tool selection (deterministic routing instead).
+- Direct Feature 001 retrieval calls and `get_policy_section` as another policy-evidence path.
+- Hardcoded request routing or a separate workflow/orchestration framework.
 - Multi-turn conversation history persistence.
 - Authentication or authorization.
 - Production-grade performance optimization (Feature 006).
@@ -106,7 +109,7 @@ Enable an LLM-based agent to:
 
 ### External Dependencies
 
-- **LLM Service:** Groq, OpenRouter, or local model (free-tier required).
+- **LLM Service:** Groq through the current provider adapter.
 - **MCP Protocol:** FastMCP or compatible SDK.
 - **Python Libraries:** MCP client, dataclasses, JSON serialization.
 
@@ -124,10 +127,10 @@ Enable an LLM-based agent to:
 
 | Criterion | Description |
 |---|---|
-| SC-001 | Agent can be initialized with F001 and F002 clients and discover MCP tools. |
-| SC-002 | Policy-only requests use retrieval and do NOT make unnecessary MCP calls. |
+| SC-001 | Agent initializes with the Feature 002 client and discovers its MCP tools. |
+| SC-002 | Policy-only requests use `search_policy_documents` without unrelated tool calls. |
 | SC-003 | Data-lookup requests invoke MCP tools correctly without excessive retrieval. |
-| SC-004 | Multi-step requests invoke both retrieval and MCP in correct sequence. |
+| SC-004 | Multi-step requests invoke policy search and structured tools sequentially. |
 | SC-005 | Ambiguous or missing-info requests trigger clarification, not guessing. |
 | SC-006 | Unsupported or absent evidence is identified; no fabricated claims. |
 | SC-007 | Tool failures are surfaced clearly with partial response or alternative. |
@@ -142,27 +145,14 @@ Enable an LLM-based agent to:
 ```
 User Request
     ↓
-[Agent Core]
-    ├─→ Intent Interpreter
-    │   └─→ Determine tools needed
-    ├─→ Tool Selector
-    │   └─→ Map intent → tools
-    ├─→ Tool Invoker
-    │   ├─→ Retrieval Client (F001)
-    │   └─→ MCP Client (F002)
-    ├─→ Evidence Validator
-    │   └─→ Verify citations, evidence
-    ├─→ Response Synthesizer
-    │   └─→ Generate answer + limitations
-    └─→ Trace Generator
-        └─→ Log decisions (redacted)
-            ↓
-        AgentResponse
-        ├─→ answer
-        ├─→ citations
-        ├─→ evidence_limitations
-        ├─→ tool_calls
-        └─→ operational_trace
+HRAgent ⇄ LLM (native tool selection; one tool per turn; bounded sequential loop)
+    ↓
+MCPClient ⇄ Feature 002 MCP Server
+              ├─ search_policy_documents → Feature 001 policy retrieval
+              ├─ synthetic employee/PTO/compliance tools
+              └─ draft_hr_email (proposal + confirmation; no email is sent)
+    ↓
+Grounded response, citations, evidence limitations, and allowlisted trace
 ```
 
 ---
@@ -172,27 +162,36 @@ User Request
 ### Environment Variables
 
 ```bash
-AGENT_MODEL_NAME=grok-3                    # LLM model
-AGENT_RETRIEVAL_K=5                        # Top-k policy chunks
-AGENT_MAX_TOOL_CALLS=10                    # Max MCP invocations
-AGENT_TEMPERATURE=0.7                      # LLM sampling
-AGENT_TRACE_SINK=logs/traces.jsonl         # Trace destination
-GROQ_API_KEY=<key>                         # Groq credentials
+AGENT_MODEL_PROVIDER=groq
+AGENT_MODEL_NAME=openai/gpt-oss-20b
+AGENT_TEMPERATURE=0
+AGENT_MAX_TOKENS=1024
+AGENT_TOP_K=5
+AGENT_MAX_TOOL_CALLS=3
+AGENT_MCP_SERVER_COMMAND=python
+AGENT_MCP_SERVER_ARGS='["-m","hr_mcp.server"]'
+AGENT_TRACE_PATH=logs/agent-traces.jsonl
 ```
+
+Set `GROQ_API_KEY` through the process environment or a local, untracked `.env` file.
 
 ### Runtime Options
 
 ```python
-response = agent.process_request(
-    user_input="...",
-    context={"prior_results": ...},
+response = await agent.process_request(
+    user_input="What policy applies to this request?",
+    context=None,
     options={
-        "retrieval_k": 3,
+        "top_k": 3,
         "max_tool_calls": 5,
-        "confirmation_required": True
     }
 )
 ```
+
+`AGENT_MCP_SERVER_ARGS` is a JSON string array and becomes the `tuple[str, ...]`
+`AgentConfig.mcp_server_args`. Convert it to `list[str]` when passing it to `MCPClient`.
+`AgentConfig.trace_path` configures the agent JSONL trace; Feature 002's MCP trace sink remains
+separately configured.
 
 ---
 
@@ -202,25 +201,36 @@ response = agent.process_request(
 
 ```python
 class HRAgent:
-    def __init__(retrieval_client, mcp_client, config): ...
-    def process_request(user_input, context, options) -> AgentResponse: ...
-    def confirm_action(action_id, confirmation, context) -> AgentResponse: ...
+    @classmethod
+    async def create(cls, mcp_client, llm_client, config=None) -> HRAgent: ...
+    async def process_request(user_input, context=None, options=None) -> AgentResponse: ...
+    async def confirm_action(action_id, confirmation, context) -> AgentResponse: ...
 ```
 
 ### Response Structure
 
 ```python
+from dataclasses import dataclass, field
+from typing import Any, Literal
+
+
 @dataclass
 class AgentResponse:
     answer: str
-    status: Literal["answered", "partial", "clarification_needed", "error", ...]
-    citations: List[Citation]
-    evidence_limitations: str
-    tool_calls: List[ToolInvocationRecord]
-    operational_trace: OperationalTrace
-    clarification_prompt: Optional[str]
-    confirmation_required: bool
-    confirmation_prompt: Optional[str]
+    status: Literal[
+        "answered", "partial", "clarification_needed", "confirmation_required",
+        "out_of_scope", "error",
+    ]
+    citations: list[Citation] = field(default_factory=list)
+    evidence_limitations: str = ""
+    tool_calls: list[ToolInvocationRecord] = field(default_factory=list)
+    operational_trace: OperationalTrace = field(default_factory=OperationalTrace)
+    clarification_prompt: str | None = None
+    confirmation_required: bool = False
+    confirmation_prompt: str | None = None
+    action_id: str | None = None
+    pending_action: dict[str, Any] | None = None
+    error_code: str | None = None
 ```
 
 See [contracts/python-interface.md](contracts/python-interface.md) for full signatures and 
@@ -234,18 +244,15 @@ types.
 
 | Category | Scenarios | Status |
 |---|---|---|
-| Intent classification | Policy, data, multi-step, ambiguous, out-of-scope | Design phase |
-| Retrieval-only requests | 3+ acceptance cases | Design phase |
-| MCP-only requests | 3+ acceptance cases | Design phase |
-| Multi-tool workflows | 3+ acceptance cases | Design phase |
-| Error handling | Tool failures, missing info, conflicts | Design phase |
-| Evidence validation | Citation grounding, fabrication detection | Design phase |
-| State-changing ops | Confirmation, mock labeling | Design phase |
-| Trace redaction | Secrets excluded, allowlisted fields present | Design phase |
+| LLM-selected policy and data tools | 3 policy-only and 3 structured-data acceptance cases | Verified locally |
+| Sequential tool use | 3 deterministic policy-plus-data sequences and protocol integration | Verified locally |
+| Clarification, evidence, and errors | Missing IDs, absent/conflicting evidence, failures/timeouts | Verified locally |
+| State-changing safety | Caller-carried draft confirmation and unsupported-action refusal | Verified locally |
+| Operational trace privacy | Allowlisted fields and private-value exclusion | Verified locally |
 
 ### Tools and Fixtures
 
-- Mocked RAGClient with representative evidence.
+- Mock MCP policy-search results with representative evidence.
 - Mocked MCPClient with synthetic tool results.
 - Mocked LLMClient for deterministic synthesis.
 - Pytest fixtures for common test data.
@@ -253,25 +260,25 @@ types.
 ### Running Tests
 
 ```bash
-pytest tests/test_agent_*.py -v
-pytest tests/test_agent_acceptance.py::test_policy_lookup -v
-pytest tests/ --cov=src/hr_agent --cov-report=term
+python -m pytest -q tests/test_agent_acceptance.py
+python -m pytest -q tests/integration/test_agent_mcp.py
+python -m ruff check .
 ```
 
 ---
 
-## Known Ambiguities and Clarifications Needed
+## Orchestration and Safety Decisions
 
-| Issue | Status | Impact |
-|---|---|---|
-| Conflicting retrieval and tool results | Pending | Response synthesis, evidence limitations |
-| Out-of-scope request boundaries | Pending | Safety, user experience |
-| Partial workflow cancellation | Pending | Multi-step UX |
-| Citation accuracy standards | Pending | Response quality validation |
-| Tool retry strategy | Pending | Resilience and latency |
-| Dynamic tool discovery | Pending | Flexibility after init |
+- The LLM selects tools from the live MCP discovery result; the agent validates schemas and
+  performs one call at a time until a final response or the configured bound.
+- Policy claims use candidate excerpts from `search_policy_documents`; missing or conflicting
+  evidence is disclosed rather than resolved by guesswork.
+- Failed calls are not automatically retried within a request. A new request may try again.
+- The only confirmable action is the existing unsent `draft_hr_email` proposal. Confirmation is
+  bound to that proposal and carried by the caller; sending, approvals, and record updates are
+  refused.
 
-See [research.md](research.md) for details and current assumptions.
+See [plan.md](plan.md) and [research.md](research.md) for implementation decisions and scope.
 
 ---
 
@@ -279,13 +286,13 @@ See [research.md](research.md) for details and current assumptions.
 
 ### Feature 001 (RAG)
 
-- Agent calls `retrieval_client.answer()` for policy evidence.
-- Retrieval results are used directly; not re-processed.
-- Evidence limitations from retrieval flow into agent response.
+- F003 does not call Feature 001 directly.
+- Policy evidence is retrieved through Feature 002's `search_policy_documents` MCP tool only.
+- Citations and evidence limitations are returned in the structured agent response.
 
 ### Feature 002 (MCP Tools)
 
-- Agent discovers tools via MCP protocol at initialization.
+- Agent discovers tools at initialization and refreshes the catalog for each request.
 - Tool invocation is exclusively through MCP (no direct calls).
 - Tool errors and results are handled per Feature 002 contracts.
 - Synthetic data sources are used as-is.
@@ -310,21 +317,18 @@ See [research.md](research.md) for details and current assumptions.
 
 | Quantic Req | F003 Coverage | Status |
 |---|---|---|
-| QR-018 | Intent interpretation, tool orchestration, synthesis | Specification defined |
-| QR-020 | Operational traces with tool decisions | Specification defined |
-| QR-021 | Error and ambiguity handling | Specification defined |
-| QR-022 | Mock operations with confirmation | Specification defined |
-| QR-026 | MCP protocol invocation | Specification defined |
+| QR-018 | LLM-native tool selection, bounded orchestration, grounded synthesis; acceptance and protocol tests | Verified |
+| QR-020 | Allowlisted operational traces and privacy tests | Verified |
+| QR-021 | Discovery, clarification, evidence-limit, failure, and timeout tests | Verified |
+| QR-022 | Draft confirmation and unsupported-action safety tests | Verified |
+| QR-026 | Five distinct successful `HRAgent` invocations through the real stdio MCP client | Verified |
 
 ---
 
 ## Next Steps
 
-1. **Review and Approve:** Specification review by project owner and stakeholders.
-2. **Resolve Ambiguities:** Clarify outstanding design questions (see research.md).
-3. **Plan Detailed Tasks:** Break implementation plan into specific GitHub issues.
-4. **Dependency Validation:** Confirm F001 and F002 are stable and ready for integration.
-5. **Begin Phase 1 Implementation:** Foundation (agent structure, MCP integration).
+1. Obtain and review GitHub Actions results for the current Feature 003 revision on Ubuntu and Windows.
+2. Keep Feature 004-specific business workflows outside Feature 003.
 
 ---
 
@@ -339,7 +343,8 @@ See [research.md](research.md) for details and current assumptions.
 | Implementation Plan | ✓ Complete | 6 phases, acceptance criteria |
 | Design Decisions | ✓ Complete | Resolved ambiguities, validation points |
 
-**Specification Readiness:** DRAFT - Ready for Implementation Review
+**Implementation Status:** Milestones 1-3 and Phase 4A are complete; Phase 4B local
+verification is in progress. Hosted CI for this branch remains to be verified.
 
 ---
 

@@ -188,7 +188,81 @@ A clean Windows Python 3.11 virtual environment installed the pinned dependencie
 `requirements.txt` and the project in editable mode; `python -m pytest -q` completed with
 **48 passed in 1.75s** using FAISS 1.10.0, NumPy 1.26.4, and pytest 8.3.4. Linux runtime
 installation and tests were not run because this environment has no Linux host or WSL; T028
-remains incomplete until Linux validation is performed. Live Sentence Transformers/Groq
-inference has also not been run. Deterministic tests verify structure, provenance, rebuild
+remains incomplete until Linux validation is performed. This F001 validation record did not
+include live Sentence Transformers/Groq inference. Deterministic tests verify structure, provenance, rebuild
 behavior, and error handling; semantic support must still be checked in the documented
 acceptance review or an opt-in provider smoke test.
+
+## Feature 002: MCP tools
+
+The implemented developer client starts one FastMCP server as a subprocess over MCP stdio.
+Discovery and calls cross that protocol boundary; future F003 agent orchestration is not yet
+implemented. Stdio keeps the local integration within a single service without a separate
+network listener. The server delegates search and section lookup to F001's active index, employee
+and PTO lookup to fictional `data/employees.json` and `data/pto.json`, bounded compliance to
+the evidence verifier, and email drafting to a deterministic template. Drafts are not sent or
+stored. The six names, descriptions, input schemas and result envelopes are in the
+[MCP contract](specs/002-mcp-tool-integration/contracts/mcp-tools.md).
+
+Search results are ranked **candidate** evidence, not proof that a passage answers a question.
+Results include source IDs, excerpts and generation metadata. Missing records or sections return
+`not_found`; insufficient compliance facts or verified evidence return `indeterminate`.
+
+### Local discovery and invocation
+
+From the project root, install Python 3.11 and `.[dev]` as in the
+[quickstart](specs/002-mcp-tool-integration/quickstart.md). For policy calls, build the F001
+index with the setup above and use the same embedding configuration. Initial model download
+may require network access; the employee example below does not require the index or model.
+The client launches `python -m hr_mcp.server`; to run the server directly for an MCP client,
+use that module as a stdio subprocess, not as an HTTP service.
+
+```powershell
+.\.venv\Scripts\python -m hr_mcp.client --discover
+.\.venv\Scripts\python -m hr_mcp.client --example lookup_employee_profile
+```
+
+The example sends `{"employee_id": "SYN-001"}` and its `structuredContent` contains
+`status: "found"` and the fictional Alex Example employee profile. The quickstart lists
+examples for all six tools, Linux equivalents, and a separate deterministic credential-free
+test setup. The client forwards the nonsecret `HR_RAG_*` settings listed above and defaults
+to a five-minute call timeout (`MCPClient(call_timeout=...)` configures it).
+
+### Safety, traces and compliance
+
+The server returns structured `INVALID_ARGUMENT`, `OPERATIONAL_ERROR`, or `UNKNOWN_ERROR`
+for classified tool failures. The client uses `UNCLASSIFIED_ERROR` with no asserted origin
+when reliable classification is unavailable; valid `not_found` and `indeterminate` results
+are not failures. SDK-rejected malformed protocol requests may never reach server dispatch.
+See the contract for details.
+
+Client and server append allowlisted JSONL events to `HR_MCP_TRACE_PATH`, defaulting to
+`.hr_mcp/traces.jsonl`. Events include invocation IDs, timestamps, outcomes, classifications,
+argument names and safe source IDs where applicable, not argument values, questions, employee
+records, email drafts, credentials or full responses. Trace persistence is fail-closed: a
+failed write returns an operational error instead of success and need not itself be recorded.
+Inspect local events with `Get-Content .\.hr_mcp\traces.jsonl` on Windows or
+`cat .hr_mcp/traces.jsonl` on Linux.
+
+Compliance checks only whether written People Operations approval was granted strictly before
+out-of-state travel, using unauthenticated caller assertions; it does not determine overall
+eligibility. Definitive results require matching full-document v2 records and separately pinned
+approval metadata for HR-004 and HR-001, verified source/index integrity and exact citations.
+The production pin is inactive; missing or unreviewed evidence yields `indeterminate`. An
+authorized maintainer must independently verify each exact full-document review and approval
+before activating the pin. The old section-only baseline and test-only synthetic baseline do
+not qualify. The [baseline procedure](specs/002-mcp-tool-integration/research.md) describes
+canonicalization, review, activation and subsequent policy changes.
+
+The [verification record](specs/002-mcp-tool-integration/quickstart.md) distinguishes local
+synthetic evidence from clean-install, Linux, production approval and deployment acceptance.
+F006 owns deployment, costs, quotas and final project-wide submission checks.
+
+### F002 validation status
+
+On Windows 11, a clean Python 3.11.9 environment installed a project snapshot and passed
+306 tests with no skips and Ruff. The isolated synthetic MCP check passed. A cached real model
+built the standard index, but the live policy-search example timed out; see the
+[detailed results](specs/002-mcp-tool-integration/quickstart.md). Linux validation remains
+unavailable. The Actions workflow is configured for Windows and Linux, but no run of these
+uncommitted changes has been observed.

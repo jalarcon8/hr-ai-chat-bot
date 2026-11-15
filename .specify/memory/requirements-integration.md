@@ -17,7 +17,7 @@ feature development:
    - Maps Quantic requirements to their assigned features.
    - Tracks requirement implementation and verification.
 
-4. `docs/requirements/quantic-project-requirements.pdf`
+4. `docs/requirements/quantic-project-requirements.md`
    - Contains the original Quantic assignment requirements.
    - Serves as the authoritative source for assignment
      requirements.
@@ -226,3 +226,42 @@ During all Spec Kit workflows:
 The objective is to deliver a simple, complete, testable,
 and reproducible implementation that satisfies the
 Quantic project requirements.
+
+## 9. Git Branching and Feature Lifecycle
+
+Each feature SHOULD be developed on a dedicated Git branch.
+
+### Branch Creation
+
+- Use the existing Spec Kit feature branch when one has been created.
+- Otherwise, create a branch from the latest verified `main`.
+- Use a consistent feature identifier and descriptive branch name.
+- Do not create duplicate branches for the same feature.
+- Confirm that required preceding features have been integrated before beginning dependent implementation.
+
+### Development
+
+- Keep the feature specification, plan, tasks, implementation, and tests on the same feature branch.
+- Commit changes at meaningful development checkpoints.
+- Do not commit unrelated feature work.
+- Do not automatically switch branches, reset history, or discard changes without user approval.
+
+### Feature Completion
+
+Before merging a feature into `main`:
+
+1. Complete the feature's planned implementation tasks.
+2. Execute applicable automated tests.
+3. Run requirements coverage analysis.
+4. Review implementation and verification evidence.
+5. Confirm the feature meets its acceptance criteria.
+6. Review and approve the pull request.
+
+Merge only after successful verification.
+
+### Branch Management
+
+- Treat `main` as the latest integrated, verified project state.
+- Preserve feature branches until their work is merged.
+- Do not automatically merge, delete branches, or rewrite Git history without explicit user approval.
+- Start each new dependent feature from the latest integrated code whenever practical.

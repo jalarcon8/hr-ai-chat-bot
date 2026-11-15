@@ -1,0 +1,10 @@
+document_id: HR-004
+title: Synthetic Remote Work Policy
+
+# 2.2 Out-of-State Work
+
+Written People Operations approval is required before travel for work in another US state.
+
+## 2.2.1 Exception
+
+This synthetic exception alters the governing document.

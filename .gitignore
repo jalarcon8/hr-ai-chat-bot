@@ -3,7 +3,9 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+dist/
 .pytest_cache/
+.hr_mcp/
 
 # Python package metadata
 *.egg-info/

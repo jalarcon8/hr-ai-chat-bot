@@ -1,0 +1,28 @@
+{
+  "records": [
+    {
+      "baseline_id": "out-of-state-prior-approval",
+      "baseline_version": "2",
+      "check_id": "out_of_state_prior_approval",
+      "document_id": "HR-001",
+      "canonical_sha256": "72de901e0b7b1a7d7014156f3bafd60d94df46c5745589df3c24a593d6492983",
+      "normalization_version": "utf8-lf-nfc-v1",
+      "approval_status": "approved",
+      "approver_id": "synthetic-test-reviewer",
+      "approved_at": "2026-01-01T00:00:00Z",
+      "approval_reference": "https://github.com/example/fictional/pull/1#pullrequestreview-1"
+    },
+    {
+      "baseline_id": "out-of-state-prior-approval",
+      "baseline_version": "2",
+      "check_id": "out_of_state_prior_approval",
+      "document_id": "HR-004",
+      "canonical_sha256": "cfcae046de40e7f008b08e7fc2f88c30323e1159fc246453f9c0afb027ea350a",
+      "normalization_version": "utf8-lf-nfc-v1",
+      "approval_status": "approved",
+      "approver_id": "synthetic-test-reviewer",
+      "approved_at": "2026-01-01T00:00:00Z",
+      "approval_reference": "https://github.com/example/fictional/pull/1#pullrequestreview-1"
+    }
+  ]
+}

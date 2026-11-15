@@ -11,7 +11,11 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
@@ -29,6 +33,9 @@ jobs:
 
       - name: Run Ruff
         run: python -m ruff check .
+
+      - name: Check MCP imports
+        run: python -c "import hr_mcp.client, hr_mcp.server"
 
       - name: Run pytest
         run: python -m pytest -q

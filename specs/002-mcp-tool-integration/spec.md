@@ -1,10 +1,10 @@
 # Feature Specification: MCP Tool Integration
 
-**Feature Branch**: Not created
+**Feature Branch**: `002-mcp-tool-integration`
 
 **Created**: 2026-11-11
 
-**Status**: Draft - clarification required
+**Status**: Draft - ready for implementation
 
 **Input**: Provide a FastMCP server exposing six proposed tools, synthetic employee and PTO
 data, and an MCP client that discovers and invokes the tools. Wrap Feature 001's RAG
@@ -270,7 +270,12 @@ inspect the MCP results and recorded, appropriately redacted tool-call trace.
   the provided client from the future agent integration. Reuse linked documentation rather
   than duplicating schemas or instructions.
 - **FR-011**: The server and client MUST support local development and remain compatible with
-  a single-service, free-tier deployment; no separately deployed service is required.
+  a single-service, free-tier deployment; no separately deployed service is required. The
+  documented local/test configuration MUST require no paid services, subscriptions,
+  infrastructure, or API credentials and MUST support all six tools through MCP using the
+  local and deterministic dependencies described in SC-009. Feature 006 owns verification of
+  deployed resource usage, provider quotas, runtime limits, operating costs, and integrated
+  free-tier compliance; the local check does not establish deployed compliance.
 - **FR-012**: Feature 002 MUST verify that its required source, synthetic data and baseline,
   tests and persistent fixtures, MCP contract, documentation, and configuration are present
   at their planned repository locations and tracked by Git. T031 defines the required inventory
@@ -328,6 +333,20 @@ inspect the MCP results and recorded, appropriately redacted tool-call trace.
   present and tracked. Record the inventory, commands, actual results and any missing or
   untracked files. A missing, untracked or unverified required item prevents this criterion
   from passing. Git tracking alone does not establish that files are committed or submitted.
+- **SC-009**: In the documented local/test configuration, review the required dependencies and
+  setup to confirm that no paid service, subscription, infrastructure, or API credential is
+  mandatory. With API credentials absent from the test and server environments and accessible
+  credential configuration, start the real MCP server through stdio, discover exactly the six
+  agreed tools, and successfully invoke each real handler at least once through MCP with valid
+  synthetic inputs and contract-conformant
+  results. Use the existing deterministic F001 embedder and isolated index, synthetic employee
+  and PTO data, local trace sink, and synthetic test-approved compliance baseline; do not activate
+  an unreviewed production baseline. Locally installed packages and unauthenticated free public
+  package sources are permitted; a live model, hosted runtime service, or credential is not
+  required. Record the configuration, dependency review, commands, platform, per-tool results,
+  and any limitations. Any missing or failed check prevents SC-009 from passing. This verifies
+  local architectural compatibility only, not deployed free-tier compliance; Feature 006 owns
+  deployed resource, quota, runtime-limit, cost, and integrated deployment verification.
 
 ## Assignment Requirements Traceability
 
@@ -355,7 +374,7 @@ only F002's contribution; the remaining assignment-level obligations are not F00
 
 | Assignment requirement | Existing FR coverage | Existing SC coverage | Coverage and remaining gap |
 |---|---|---|---|
-| QR-003: Free or zero-cost options and modest resources | FR-011 | None | Partial: free-tier compatibility is required; small dataset size, cost, and resource usage are not explicitly specified or measured. F006 owns deployment verification. |
+| QR-003: Free or zero-cost options and modest resources | FR-011 | SC-009 | Partial: T033 verifies the credential-free local/test configuration, dependency review, and all six MCP invocations. This does not measure deployed resources, provider quotas, runtime limits, or costs; F006 owns integrated free-tier deployment verification. |
 | QR-004: Reproducible environment and dependency list | FR-010 | SC-005 | Partial: local setup is documented and reproducible; an environment setup and dependency list are not explicitly required or checked. F006 owns final reproducibility. |
 | QR-005: README setup, local run, deployment, and evaluation instructions | FR-010 | SC-005 | Partial: F002 setup and local execution are covered; the README location and deployment and evaluation instructions are not specified. F006 owns final documentation. |
 | QR-007: Secrets in environment variables and not committed | FR-007 | SC-004 | Partial: secrets must not appear in traces; environment-based secret configuration and repository checks are not specified. F006 owns project-wide verification. |
@@ -364,7 +383,7 @@ only F002's contribution; the remaining assignment-level obligations are not F00
 | QR-021: Failures, missing information, and clarification | FR-002a, FR-006 | SC-003, SC-006 | Partial: F002 reports failures and insufficient facts; agent clarification remains F003. |
 | QR-022: Prevent irreversible actions | FR-002c, FR-008 | SC-006 | Drafting has no external action; conditional mutation safeguards are specified, but no mutation is agreed or tested in this feature. F003/F004 own workflow-level action safety. |
 | QR-026: Agent calls MCP tools during execution | FR-003 | SC-001 | Partial: real client calls are required, but agent-driven calls remain F003. |
-| QR-034: Single-service deployment and no paid database requirement | FR-011 | None | Partial: single-service compatibility is required; database cost and deployed configuration are not specified or checked. F006 owns deployment. |
+| QR-034: Single-service deployment and no paid database requirement | FR-011 | SC-009 | Partial: T033 checks that the local/test configuration requires no paid infrastructure or hosted runtime service. Deployed configuration and database cost remain F006 responsibilities. |
 | QR-035: Environment-configured URL if MCP is separately deployed | FR-011 | None | Conditional: F002 requires no separate service; URL configuration is not specified. F006 owns this obligation if separate deployment is introduced. |
 | QR-037: CI installation, build/start/import check, and tests before deployment | FR-009 | SC-003, SC-006 | Partial: F002 requires automated tests; CI triggers, installation, build/start/import checks, and deployment gating are not specified. F006 owns CI/CD. |
 | QR-038: Application-start and MCP discovery or call tests | FR-009 | SC-001 | Partial: MCP discovery and invocation are covered; application-start testing and CI execution remain F006. |
@@ -388,7 +407,6 @@ to this feature.
   recommend escalation where needed, obtain available compliance facts via appropriate tools
   or user clarification, and avoid unsupported conclusions; F002 supplies the distinguishable
   outcomes and traces but does not implement orchestration.
-- Detailed response fields, supported-check identifiers, and validation mechanisms are
-  deferred to planning. The assignment's example list does not designate a set of six.
-- Detailed client/server design is deferred to planning, subject to MCP compatibility and the
-  single-service constraint; local transport uses stdio.
+- Tool contracts and client/server design are documented in the feature's plan and MCP
+  contract. They remain proposed until implemented and verified. MCP uses stdio; the
+  assignment's examples do not prescribe the six-tool list.

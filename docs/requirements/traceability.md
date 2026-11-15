@@ -1,6 +1,6 @@
 # Quantic Requirements Traceability
 
-Source: [Quantic AI Agent project](Quantic%20AI%20Agent%20project.pdf). Page numbers refer to
+Source: [Quantic AI Agent project](quantic-project-requirements.pdf). Page numbers refer to
 the eight-page PDF. Wording such as "should", "where feasible", "approximately", and
 "optional" retains the source's level of obligation; project constitution requirements can
 be stricter. Ownership identifies one primary feature and, where useful, supporting features.

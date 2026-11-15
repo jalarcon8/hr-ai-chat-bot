@@ -3,7 +3,7 @@
 This is the planned validation guide; the commands below depend on F002 being implemented.
 Do not treat them as currently runnable or as evidence of completion.
 
-## Prerequisites
+## Standard setup prerequisites
 
 - Python 3.11 and a clean virtual environment.
 - An F001 index built from the fictional `corpus/`, with the same embedding model configured
@@ -26,6 +26,25 @@ py -3.11 -m venv .venv
 On Linux, use `python3.11 -m venv .venv` and `.venv/bin/python` for the corresponding
 commands. Follow the [F001 setup](../001-HR_Policy_RAG/quickstart.md) to build the index;
 do not use real employee information.
+
+## Credential-free local/test configuration
+
+After implementation, T028 will document the commands for SC-009 using the existing stdio
+integration tests, a deterministic F001 embedder and isolated index, synthetic employee and
+PTO data, a local trace sink, and a synthetic test-approved compliance baseline. Run the test
+and server without API credentials or hosted runtime services. Local packages and
+unauthenticated free public package sources for installation are permitted. This test baseline
+does not authorize activation of the production baseline.
+This synthetic check does not require the standard setup's production embedding model or
+reviewed production baseline, and may execute independently of T032. Real compliance
+determinations still require the reviewed production baseline and all documented evidence checks.
+
+T033 will record the platform, configuration, dependency and access review, commands, and
+per-tool invocation results here; its results or limitations inform T032's final documentation
+review without making T032 an execution prerequisite. Local success does not prove production
+readiness or deployment-level free-tier
+compliance; Feature 006 owns deployed resource, provider quota, runtime-limit, cost, and
+integrated deployment verification.
 
 ## Protocol smoke test
 

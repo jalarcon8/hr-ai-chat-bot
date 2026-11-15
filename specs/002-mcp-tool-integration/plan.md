@@ -3,7 +3,7 @@
 **Feature**: `002-mcp-tool-integration` | **Date**: 2026-11-14 |
 **Spec**: [spec.md](spec.md)
 
-**Branch**: No feature branch created; the repository was on `main` during planning.
+**Branch**: `002-mcp-tool-integration`; initial planning occurred on `main`.
 
 ## Summary
 
@@ -28,7 +28,10 @@ use a configurable local sink.
 
 **Testing**: pytest and Ruff; deterministic embedder and synthetic fixtures; real MCP stdio
 subprocess tests including discovery, all six calls, bad schemas, failures, and traces.
-Do not require Groq, a live model, or a provider key for routine tests.
+The documented SC-009 local/test configuration requires no paid service, subscription,
+infrastructure, API credential, live model, or hosted runtime service. It uses locally installed
+packages, a deterministic F001 embedder and isolated index, synthetic data and a test-approved
+baseline; unauthenticated free public package sources may be used for installation.
 
 **Target Platform**: Windows Python 3.11 and Linux Python 3.11; compatible with a future
 single-service deployment. F001 Linux clean-install/live-model validation remains open.
@@ -73,7 +76,7 @@ specs/002-mcp-tool-integration/
   data-model.md
   contracts/mcp-tools.md
   quickstart.md
-  tasks.md                 # Future /speckit-tasks output; not produced by planning
+  tasks.md                 # Generated implementation and verification tasks
 ```
 
 ### Proposed implementation layout
@@ -81,24 +84,32 @@ specs/002-mcp-tool-integration/
 ```text
 src/hr_rag/                # Existing F001; no retrieval replacement
 src/hr_mcp/
+  __init__.py
   server.py                # FastMCP registrations and stdio entry point
   client.py                # stdio lifecycle, discovery, calls, examples and client traces
   policy.py                # F001 search and active-snapshot section adapter
   data.py                  # validated read-only synthetic JSON records
   tools.py                 # bounded compliance and deterministic drafting
   models.py                # tool inputs, outputs, errors, safe trace events
+  trace.py                 # allowlisted trace events and persistent sink
 data/
   employees.json
   pto.json
-  compliance-baselines/     # Versioned reviewed policy text and digest
+  compliance-baselines/     # Versioned baseline records and document digests
 tests/
-  test_mcp_tools.py
+  test_mcp_discovery.py
+  test_mcp_policy.py
+  test_mcp_data.py
+  test_mcp_compliance.py
+  test_mcp_draft.py
   test_mcp_stdio.py
-  fixtures/                # isolated fictional records and deterministic doubles
+  test_mcp_errors.py
+  test_mcp_trace.py
+  fixtures/mcp/            # isolated fictional records and deterministic doubles
 ```
 
-These are proposed paths, not existing implementations. Keep modules cohesive and adjust
-the split if unnecessary during tasks. Add the SDK to `pyproject.toml` and keep
+These are planned paths, not existing implementations. Keep modules cohesive and reconcile
+any necessary layout changes with the task inventory. Add the SDK to `pyproject.toml` and keep
 `requirements.txt` and setup documentation coherent; preserve existing Python 3.11 support.
 
 ## Phase 0: Research Decisions
@@ -190,6 +201,15 @@ policy changes, and client-side tracing of protocol and transport failures.
    all six tools, compare their names, descriptions and schemas with the contract, and invoke a
    documented synthetic example over MCP. Compare the architecture and transport description
    with the implementation and record the commands and results or unverified limitations.
+7. For FR-011 and SC-009, use the documented credential-free local/test configuration and the
+   real MCP server and handlers to discover and invoke all six tools, reusing the deterministic
+   stdio integration tests. Review required dependencies and record the configuration, commands,
+   platform, per-tool results and limitations. A synthetic test-approved baseline is not approval
+   of the production baseline. T033's execution does not depend on T032, a production model, or
+   production baseline review; record its results or limitations for T032's final documentation
+   review and serialize shared-file edits. Complete both checks before feature acceptance. This
+   demonstrates local compatibility only; F006 measures deployed resources, provider quotas,
+   runtime limits and operating costs and verifies integrated free-tier compliance.
 
 ## Requirement Mapping and Deferred Ownership
 
@@ -200,7 +220,7 @@ policy changes, and client-side tracing of protocol and transport failures.
 | QR-027 | FR-010 and SC-005/SC-007; T028 updates linked implementation documentation and T032 verifies architecture, live discovery, schemas and an example invocation. F003 documents its actual agent-client integration. |
 | QR-020, QR-021, QR-022 | Redacted client traces, explicit no-result/errors, safe mock-only actions; full agent behavior remains F003/F004. |
 | QR-018, QR-026 | F002 supplies real protocol client; agent selection and agent-driven calls remain F003. |
-| QR-003-QR-005, QR-007 | Reproducible installation, local docs, bounded resources, environment secrets; final hosting and full setup ownership remains F006. |
+| QR-003-QR-005, QR-007 | Reproducible installation and local docs; FR-011, SC-009 and T033 verify a credential-free, no-paid-service local/test configuration. F006 owns final hosting, deployed resource and cost measurements, and full setup verification. |
 | QR-035 | Separate MCP deployment is not planned; conditional URL configuration remains F006 if architecture changes. |
 | QR-038 | F002 adds a real MCP discovery/call test; F006 owns application-start and final CI/deployment gates. |
 

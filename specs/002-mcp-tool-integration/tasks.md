@@ -8,7 +8,7 @@
 Do not modify Feature 001 or create another retrieval pipeline. Its remaining Linux and
 live-model verification is not evidence that F002 has passed.
 
-**Verification**: Required by FR-009 and SC-001 through SC-008. Use fictional fixtures, deterministic
+**Verification**: Required by FR-009 and SC-001 through SC-009. Use fictional fixtures, deterministic
 embedders, and actual MCP stdio calls; routine tests must not require provider credentials.
 
 **Format**: `[P]` marks tasks that can run concurrently once their stated prerequisites are
@@ -109,6 +109,11 @@ compliance limitations, and no external email or mutation.
   Preserve individual citation-validation failures distinctly from F001 snapshot validation
   failures so the compliance handler can return `indeterminate` for invalid required offsets.
 - [ ] T016 [US2] Implement `out_of_state_prior_approval` in `src/hr_mcp/tools.py` using caller-supplied facts and indexed HR-004 section 2.2 citations from one active snapshot. Create the versioned `data/compliance-baselines/out-of-state-prior-approval-v2.json` for the complete HR-004 and HR-001 governing set. Obtain explicit full-document review and have an authorized maintainer verify each independent repository review record before activation; pin every per-document field in `data-model.md` separately in version-controlled implementation configuration. Validate approval records for completeness, format, approved status, binding and exact equality to the pin independently of content hashing; do not claim offline checks authenticate reviews. For each governing document safely resolve its indexed source under the configured corpus root, read it once, verify raw SHA-256 against that snapshot's F001 `content_hash`, and compare its complete UTF-8/LF/NFC canonical SHA-256 against the pin without trimming. For indexed citations, strictly decode those same bytes as UTF-8 without newline or Unicode normalization, validate zero-based, half-open Python string character offsets and exact snippet equality as specified in `data-model.md`, and never slice raw bytes or canonicalized text with those offsets; never use source files as a substitute for indexed citations. Return `indeterminate` with limitations for invalid required citation offsets, unreconstructable indexed text, missing/invalid/unapproved/unverifiable approval metadata, invalid baseline, missing/changed/unverifiable governing documents or insufficient citations; retain corrupt-index operational errors. Do not activate v2 before review or imply overall eligibility. New governing documents or policy changes require a new version and explicit review before activation (FR-002a, QR-021).
+  The handler and baseline-validation implementation may be completed and exercised with the
+  isolated test-approved fixture before production document review. Until the production baseline
+  is reviewed and activated, real checks must fail closed as specified. T016 is complete only
+  after its production review and activation requirements are satisfied; synthetic fixture
+  approval is not production approval.
   Evaluate structured caller assertions under the contract's ordered rules, comparing timestamps
   as instants and requiring written People Operations approval strictly before travel. Reject
   malformed or contradictory inputs first; a disqualified candidate is conclusive only when the
@@ -215,9 +220,10 @@ scenarios are covered without real HR integrations or external actions.
 
 **Purpose**: Make installation, execution, CI, and acceptance reproducible.
 
-- [ ] T028 [P] Update `README.md`, `specs/002-mcp-tool-integration/quickstart.md`, and `specs/002-mcp-tool-integration/contracts/mcp-tools.md` to reflect the implemented system: document client/server architecture and component connections to F001 and synthetic data, stdio transport choice, how the provided client discovers names and schemas and invokes tools through MCP, and reproducible synthetic example commands, arguments and expected results. Keep all six implemented tool names, descriptions and input schemas in the contract and link to them from the README and quickstart rather than duplicating them; distinguish the implemented client from future agent integration. Preserve Python 3.11 installation, synthetic datasets, F001 index/model prerequisites, trace allowlist/sink, safe failure behavior, baseline location and review/activation procedure, and reviewed-policy limitations (FR-010, QR-004, QR-005, QR-027).
+- [ ] T028 [P] Update `README.md`, `specs/002-mcp-tool-integration/quickstart.md`, and `specs/002-mcp-tool-integration/contracts/mcp-tools.md` to reflect the implemented system: document client/server architecture and component connections to F001 and synthetic data, stdio transport choice, how the provided client discovers names and schemas and invokes tools through MCP, and reproducible synthetic example commands, arguments and expected results. Keep all six implemented tool names, descriptions and input schemas in the contract and link to them from the README and quickstart rather than duplicating them; distinguish the implemented client from future agent integration. Preserve Python 3.11 installation, synthetic datasets, F001 index/model prerequisites, trace allowlist/sink, safe failure behavior, baseline location and review/activation procedure, and reviewed-policy limitations. Document the separate SC-009 local/test configuration, its deterministic fixtures, credential-free execution and commands, and its distinction from the production baseline and deployed free-tier verification (FR-010, FR-011, SC-009, QR-003, QR-004, QR-005, QR-027).
 - [ ] T029 Ensure `.github/workflows/ci.yml` installs the declared MCP dependency and executes the real MCP discovery/call tests and full pytest suite on Python 3.11; add an appropriate import or startup check if absent without adding deployment or changing unrelated CI behavior (QR-023, QR-038).
-- [ ] T032 Verify QR-027 documentation after implementation and T028: inspect the README, quickstart and contract against the implemented client, server, F001 and synthetic-data connections and actual transport. Follow the documented local setup and commands to launch the server through the real stdio client, discover all six tool names, descriptions and input schemas, and compare them with the documented contract. Invoke the documented `lookup_employee_profile` synthetic example through MCP; compare the documented arguments and expected result with the actual client example and response. Record the platform, commands and results in the README or quickstart; record failures or unavailable prerequisites explicitly and do not mark verification passed if any step was not completed (FR-010, SC-005, SC-007, QR-027).
+- [ ] T032 Verify QR-027 documentation after implementation and T028: inspect the README, quickstart and contract against the implemented client, server, F001 and synthetic-data connections and actual transport. Follow the documented local setup and commands to launch the server through the real stdio client, discover all six tool names, descriptions and input schemas, and compare them with the documented contract. Invoke the documented `lookup_employee_profile` synthetic example through MCP; compare the documented arguments and expected result with the actual client example and response. Record the platform, commands and results in the README or quickstart; record failures or unavailable prerequisites explicitly and do not mark verification passed if any step was not completed. For the final documentation review, consider T033's recorded results or its explicitly recorded unverified limitations and ensure the documentation accurately distinguishes synthetic and standard setups; T033 success is not a prerequisite for executing the QR-027 check (FR-010, SC-005, SC-007, QR-027).
+- [ ] T033 Verify FR-011 and SC-009 using the local/test configuration and existing T020 stdio integration infrastructure. Execution requires the T018 real server registrations and handlers, the T024 sink and T025 adapter, the authored T020 integration tests, T004 synthetic fixtures and installed local test dependencies; it does not require T032, T021 or T027 to have passed, a production embedding model, a reviewed production baseline, or paid external services. T016's handler and baseline-validation implementation must exist, but its production review and activation need not be complete. Review the manifests, transitive runtime/test dependencies and documented setup for mandatory paid services, subscriptions, infrastructure or API credentials; identify the dependencies and their sources and record any mandatory paid or authenticated access as a failure. Use locally installed packages or unauthenticated free public package sources for installation. Run with API credentials absent from the test process and server subprocess, including any credential variables identified in the dependency and configuration review; isolate accessible credential files and provider profiles as needed. Record variable names and absence only, never values. Use the real server, registrations and handlers, deterministic F001 embedder and isolated snapshot, synthetic records, local trace sink and a synthetic test-approved baseline. Verify no live model or hosted runtime service is required, and use existing doubles or fault injection to reject external model/service calls. Start the server over stdio, discover exactly six agreed tools and invoke each at least once with valid synthetic inputs; assert `isError` is not true and each structured result matches its contract, including applicable compliance evidence and limitations. Record the platform, commands, dependency and access review, environment configuration, per-tool inputs or test identifiers and actual outcomes, and any failures or limitations in `specs/002-mcp-tool-integration/quickstart.md`; do not record credentials. T028 must document this configuration before T033 is marked complete. Mark SC-009 unverified if any check is missing or fails. The synthetic review does not authorize a production baseline, and successful local tests do not establish production readiness or deployment compliance. F006 owns deployed resource usage, provider quotas, runtime limits, operating costs and integrated free-tier verification (FR-011, SC-009, QR-003).
 - [ ] T030 Run the documented clean-install, Ruff, full pytest suite, six-tool stdio examples, and acceptance checks on Windows and Linux Python 3.11; record actual results and dependency, model-resource, or unavailable-platform limitations in `README.md` and do not mark unrun checks as passed (SC-005, QR-003, QR-004, QR-005).
 - [ ] T031 Review `specs/002-mcp-tool-integration/spec.md`, `specs/002-mcp-tool-integration/plan.md`, `specs/002-mcp-tool-integration/contracts/mcp-tools.md`, and this task list against F002's assigned requirements; document unverified evidence and dependencies without changing project-level requirement statuses (QR-002, QR-023-QR-027, QR-052).
   Record FR-009 verification evidence in `specs/002-mcp-tool-integration/quickstart.md`: for
@@ -267,21 +273,27 @@ scenarios are covered without real HR integrations or external actions.
   the later classification adapter.
 - US2 tests T009-T012 can be written in parallel after the foundation. T013 is independent
   of T014-T015; T015 follows T014 because both edit `policy.py`. T016 requires T015 and
-  follows T017 or precedes it serially because both edit `tools.py`. T018 requires T006 and
-  T013-T017; T019 requires T007 and T018. T024 requires the foundation; T025 requires T018
+  follows T017 or precedes it serially because both edit `tools.py`. T018 requires T006,
+  T013-T015, T017, and T016's handler and baseline-validation implementation, not T016's
+  production review or activation. T019 requires T007 and T018. T024 requires the foundation; T025 requires T018
   and T024. T020 requires T018, T019, and T025; it can be authored earlier but must not be
   required to pass until those prerequisites are complete. T021 requires T020 and the preceding
   tests. Full US1 acceptance depends on T020-T021.
 - US3 test drafts T022-T023 can be written after the foundation; their execution in T027
   requires T018, T021 and T024-T026 as well as both test files. T018 requires the real handlers
-  T013-T017, T021 includes the T020 compliance outcome tests, and T025 provides the
+  T013-T017, with T016's implementation sufficient before production review; T021 includes the T020 compliance outcome tests, and T025 provides the
   error-classification adapter. T026 requires T019 and T024.
   T025 and T026 edit different files but should start only after their respective US2 edits are
   complete.
-- T028-T029 can proceed after story interfaces stabilize and edit different files. T032
-  requires T021, T027, and T028; it verifies the implemented system and records results after
-  documentation is updated. T030 requires T021, T027, T028, T029, and T032. T031 follows T030
-  so unverified evidence is reported.
+- T028-T029 can proceed after story interfaces stabilize and edit different files. T032's
+  QR-027 check requires T021, T027, and T028; its execution does not require T033 to pass.
+  T033 execution requires T018, T024-T025, authored T020 tests, T004 fixtures and installed
+  local test dependencies, but neither T032 nor production baseline review or activation.
+  T028 must document the tested configuration before T033 completion. Record T033 results or
+  limitations before T032's final documentation review, and serialize edits to shared files;
+  documentation-edit ordering is not a runtime dependency between the checks.
+  T030 requires completed T016, T021, T027-T029, T032 and T033; both checks must pass before
+  Feature 002 acceptance. T031 follows T030 so unverified evidence is reported.
 
 ### Story dependencies
 
@@ -308,14 +320,17 @@ scenarios are covered without real HR integrations or external actions.
 3. Implement and integrate all six real operations for US2; add the T024 trace sink and T025
    server adapter before T020-T021 run against real handlers.
 4. Complete US3's client-side error and trace behavior, then run its cross-boundary tests.
-5. Verify the implemented QR-027 documentation with T032, then run clean-install and full
-   acceptance checks on both target platforms and report any gaps.
+5. Execute the local compatibility check T033 independently of T032; use its recorded results
+   or limitations in T032's final documentation review. Complete both checks and T016's
+   production review before Feature 002 acceptance, then run clean-install and full acceptance
+   checks on both target platforms and report gaps.
 
 ## Requirement Coverage
 
 | Requirement | Implementation / verification tasks |
 |---|---|
 | FR-009 | T004, T020-T023, T027, T031; six-tool matrix and recorded verification evidence |
+| FR-011 | SC-009; T020-T021, T028 and T033 verify and document credential-free local compatibility; F006 verifies integrated deployment |
 | QR-002 | T002, T004, T010, T013, T020 |
 | QR-023 | T001, T005-T008, T020, T029 |
 | QR-024 | T005-T008, T014, T018, T020-T021 |
@@ -324,7 +339,7 @@ scenarios are covered without real HR integrations or external actions.
 | QR-052 | FR-012, SC-008; T002, T006, T013-T018, T031 verifies and records F002's tracked repository contribution; final verification remains F006 |
 | QR-020-QR-022 (supporting F003/F004) | T011-T012, T016-T017, T022-T027 |
 | QR-018, QR-026 (supporting F003) | T005-T008, T020-T021; agent selection and agent-driven calls remain F003 |
-| QR-003-QR-005, QR-007 (supporting F006) | T001, T023-T024, T028-T030; free-tier deployment and final evaluation remain F006 |
+| QR-003-QR-005, QR-007 (supporting F006) | T001, T023-T024, T028-T030, T033; SC-009 checks local compatibility, while free-tier deployment and final evaluation remain F006 |
 | QR-035 (conditional, F006-owned) | T031; separate MCP deployment is not planned |
 | QR-038 (supporting F006) | T005, T008, T020, T029; final application-start and deployment gates remain F006 |
 

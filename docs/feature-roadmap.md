@@ -2,7 +2,7 @@
 
 ## Purpose and baseline
 
-This roadmap divides the [Quantic assignment](requirements/Quantic%20AI%20Agent%20project.pdf)
+This roadmap divides the [Quantic assignment](requirements/quantic-project-requirements.pdf)
 into six proposed features. The [requirements matrix](requirements/traceability.md) identifies
 primary ownership, supporting features, and verification for each assignment requirement.
 The [constitution](../.specify/memory/constitution.md) governs implementation. These documents
@@ -147,19 +147,13 @@ and verifies them rather than postponing all testing and documentation.
   operations, Python-first design, and modular responsibilities fit the constitution. Streamlit,
   FastMCP, and the proposed model stack should be kept only if they satisfy the required
   interfaces and free-tier limits without extra infrastructure.
-- **Review recommendation - existing specifications:** The current F002 draft requests
-  clarification about the six tools. The list in this roadmap resolves their names, but
-  tool-specific contracts and how `check_policy_compliance` reaches evidence-based conclusions
-  still need agreement in the feature specification. `draft_hr_email` must not send email.
-  Update the draft separately after review; no feature spec is changed by this roadmap.
+- **Review recommendation - existing specifications:** The six F002 tools and compliance
+  contract are specified. Implementation, baseline review, and verification remain pending.
+  `draft_hr_email` must not send email.
 - **Review recommendation - interface equivalence:** Confirm during F005 planning that the
   Streamlit design provides a grader-accessible chat request flow and JSON health status,
   including MCP connectivity where feasible. If it cannot, propose the smallest compatible
   equivalent without silently introducing another deployed service.
-- **Review recommendation - source link:** The markdown is at
-  `docs/requirements/quantic-project-requirements.md`, not the filename in the request or the
-  path currently referenced by the constitution. Correct the constitution link separately
-  after approval; this roadmap does not modify it.
 - **Ambiguity - corpus size:** The PDF describes approximately 5-20 documents totaling
   30-120 pages; Markdown/TXT pagination is not intrinsic. Define a reproducible page-equivalent
   convention or seek clarification before final acceptance; do not lower the target silently.

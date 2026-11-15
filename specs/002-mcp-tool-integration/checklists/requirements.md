@@ -13,20 +13,23 @@
 ## Requirement Completeness
 
 - [x] No clarification markers remain
-- [ ] Each of the six tool behaviors and contracts is defined and testable
+- [x] Each of the six tool behaviors and contracts is defined and testable
 - [x] Success criteria are measurable
 - [x] Primary acceptance scenarios and edge cases are identified
 - [x] Scope, dependencies, and assumptions are identified
 
 ## Feature Readiness
 
-- [ ] All functional requirements have clear acceptance criteria
+- [x] All functional requirements have clear acceptance criteria
 - [x] User scenarios cover discovery, policy evidence, structured data, and error handling
 - [x] Project-wide obligations deferred from this increment are identified
 
 ## Notes
 
-- FR-002 requires the actual proposed six-tool list. The available assignment document contains
-  examples but does not choose six, and Feature 001 does not identify a proposed MCP tool set.
-- The tool-specific requirements and acceptance cases must be completed before planning.
-- Feature 001 is currently specified, not implemented; full integration testing depends on it.
+- FR-002 names the six tools; their inputs, outcomes, and failure cases are defined in the
+  MCP contract and verification tasks. This does not claim implementation or test execution.
+- FR-011's Feature 002 acceptance is defined by SC-009 and T033; deployment and resource
+  validation remain assigned to Feature 006. Neither check has been executed.
+- Feature 001's retrieval implementation exists, but Linux validation and live-model checks
+  remain unverified. Full integration testing depends on Feature 001.
+- Full-document compliance baseline review and activation remain pending.

@@ -6,6 +6,12 @@ Modified principles: III. Modular Separation; IV. Grounded AI Responses;
 Added sections: Assignment Delivery Requirements
 Removed sections: none
 Follow-up: Confirm the ratification date.
+
+2026-11-14 patch amendment: 1.1.0 -> 1.1.1
+Change and rationale: Correct the authoritative assignment PDF link to its current location.
+Impact: No requirements or feature scope change.
+Migration: Correct the matching roadmap and traceability links.
+Approval: User approved the link corrections on 2026-11-14.
 -->
 
 # Lightweight HR AI Chatbot Constitution
@@ -87,7 +93,7 @@ Follow-up: Confirm the ratification date.
 - The Quantic assignment requirements govern feature scope and acceptance. Where those
   requirements are ambiguous, record the gap and seek clarification rather than inventing
   requirements. The authoritative assignment is
-  [Quantic AI Agent project.pdf](../../docs/Quantic%20AI%20Agent%20project.pdf).
+  [quantic-project-requirements.pdf](../../docs/requirements/quantic-project-requirements.pdf).
 - Real HR integrations, real employee data, and features beyond the assignment scope are
   prohibited.
 
@@ -156,4 +162,4 @@ Follow-up: Confirm the ratification date.
 - Reviews MUST check compliance with this constitution. Exceptions require an approved
   amendment rather than an undocumented waiver.
 
-**Version**: 1.1.0 | **Ratified**: TODO(RATIFICATION_DATE): Confirm project owner approval date | **Last Amended**: 2026-11-10
+**Version**: 1.1.1 | **Ratified**: 2026-11-12 | **Last Amended**: 2026-11-14

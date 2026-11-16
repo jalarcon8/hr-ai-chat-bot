@@ -120,8 +120,8 @@ are ready.
    - Verify app startup and use the sidebar health check to confirm MCP stdio discovery and
      the six-tool catalog. This health check does not call Groq and is not proof of provider
      readiness.
-   - In the browser, enter synthetic employee ID `TEST-001` and run the F004 PTO scenario:
-     8 hours on `2026-02-01`. Verify the profile, 40-hour balance as of `2026-01-01`,
+   - In the browser, enter synthetic employee ID `SYN-001` and run the PTO scenario:
+     8 hours on `2026-02-01`. Verify the profile, 80-hour balance as of `2026-01-01`,
      matching returned `HR-002` policy citation, visible safe tool trace, and no claim that a
      request was submitted or approved.
    - Treat this as one controlled smoke test. If the UI returns `llm_request_failed`, do not
@@ -176,8 +176,13 @@ are ready.
 6. Use the same evaluation cases and local F001 retrieval interface for the k=3 versus k=5
    evidence-recall comparison against expected source IDs. This uses no additional live LLM
    calls and reports the measured result without presuming an improvement.
-7. Test case validation, scoring aggregation, and partial-result handling with deterministic
-   unit tests. Do not run live evaluation in CI.
+7. Test case validation, scoring aggregation, diagnostic gating, and partial-result handling
+   with deterministic unit tests. Keep live provider calls out of routine CI; the approved
+   exception is a separate Ubuntu job in the existing workflow, available only through
+   `workflow_dispatch`, an explicit boolean opt-in, the protected `main` branch, and passing
+   matrix tests. It must run one MCP-backed diagnostic case first and skip the full suite if
+   that case fails. Keep outputs in a separate runner-temp directory and upload them even
+   when evaluation fails.
 
 ### Phase 4 - Final documentation and submission verification
 
@@ -201,9 +206,9 @@ are ready.
 | App startup | Existing `AppTest` in `tests/test_chat_interface.py`, included in the full pytest CI job. | Open the deployed app URL and verify it renders. |
 | MCP integration | Existing `tests/integration/test_agent_mcp.py` discovers and invokes the stdio server under CI. | Use the deployed UI health equivalent to confirm discovery; then verify a workflow produces actual calls. |
 | Index artifact | F001 index tests plus a focused integrity/retrieval check for the committed active snapshot; no CI model download. | Verify the deployed policy search returns expected synthetic evidence; observe first-use model download/cold latency if applicable. |
-| Live vertical slice | No provider-dependent CI. Deterministic F004 and F005 tests remain the contract checks. | One deployed `TEST-001` PTO scenario; inspect balance date, HR-002 citation, ordered tool outcomes, and final status. Stop on provider failure without blind retry. |
+| Live vertical slice | No provider-dependent CI. Deterministic F004 and F005 tests remain the contract checks. | One deployed `SYN-001` PTO scenario; inspect the 80-hour balance/date, HR-002 citation, ordered tool outcomes, and final status. Stop on provider failure without blind retry. |
 | CI deployment gate | Existing CI jobs pass on push/PR. | Inspect required `main` status checks and Community Cloud's tracked branch; confirm failed checks cannot be merged to the deployment branch. |
-| Evaluation | Unit tests validate dataset coverage, metric aggregation, fixed sample selection, and partial result preservation with synthetic records. | One opt-in sequential Groq run; manually assess groundedness/citations; inspect p50/p95 and k comparison; distinguish provider failures. |
+| Evaluation | Unit tests validate dataset coverage, metric aggregation, diagnostic gating, fixed sample selection, and partial-result preservation with synthetic records. The live job is manual-only and isolated from routine CI. | The Ubuntu job runs one Groq/MCP diagnostic, then at most one sequential 20-case Groq run; manually assess groundedness/citations; inspect p50/p95 and k comparison; distinguish provider failures. |
 | Submission | Documentation/link/case-shape checks where simple and deterministic. | Confirm deployment/demo/repository links, grader access, recording content/duration, dashboard submission, participant count, and presenter requirements. |
 
 ## Requirements-to-Design Traceability

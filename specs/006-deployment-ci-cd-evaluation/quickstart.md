@@ -60,8 +60,8 @@ project's `src/` packages are available from the Community Cloud checkout.
 
 ## 3. Configure CI and the protected deployment branch
 
-Use the existing `.github/workflows/ci.yml`; do not create a deployment workflow. The
-workflow must pass on the change before deployment. In GitHub repository settings:
+Use the existing `.github/workflows/ci.yml`; do not create a separate deployment workflow.
+The workflow must pass on the change before deployment. In GitHub repository settings:
 
 1. Require the existing Ubuntu and Windows matrix checks before merging to `main`.
 2. Block direct pushes that would bypass required checks.
@@ -70,7 +70,8 @@ workflow must pass on the change before deployment. In GitHub repository setting
 
 These branch-protection and Community Cloud settings are manual evidence; pytest cannot
 verify them. Reuse the current workflow for Ruff, import checks, the stdio MCP integration,
-the named AppTest step, and the full pytest suite; do not add another workflow.
+the named AppTest step, and the full pytest suite. Its separate Ubuntu evaluation job is
+available only through a manual dispatch after the ordinary test matrix passes.
 
 ## 4. Deploy and verify one live vertical slice
 
@@ -80,6 +81,10 @@ In Streamlit Community Cloud, configure:
 - Python 3.11.
 - `src/hr_app/app.py` as the entry point.
 - `GROQ_API_KEY` in the app's Secrets settings, with no value stored in the repository.
+
+The user reports the app is deployed at
+<https://hr-ai-chat-bot-jonathan-alarcon.streamlit.app/> and that several prompts produced
+successful chatbot responses. No per-prompt traces or running deployment commit were retained.
 
 The Streamlit boundary maps the host secret to the existing environment-backed Groq
 configuration for the process lifetime. The key must not be printed, persisted, or included
@@ -92,17 +97,20 @@ After deployment:
 2. Use **Check MCP health**. Confirm the JSON result reports app availability and successful
    MCP discovery (six tools). This check does not call Groq and is not sufficient proof that
    the provider is configured.
-3. Enter `TEST-001` in the synthetic employee ID field.
+3. Enter `SYN-001` in the synthetic employee ID field.
 4. Ask: `Can I request 8 hours of PTO on 2026-02-01? Check my available balance and explain the policy steps.`
-5. Verify the returned answer uses the synthetic employee profile, 40 available hours as of
+5. Verify the returned answer uses the synthetic employee profile, 80 available hours as of
    `2026-01-01`, an `HR-002` policy citation and snippet, and the visible ordered tool
    activity; it must not claim the request was submitted or approved.
 6. Record only the case ID, safe status, tool names/outcomes, source IDs, overall pass/fail/
    inconclusive result, deployment commit, and measured latency if available. Do not retain
    credentials or unnecessary raw content.
 
-The prior F005 browser run returned `llm_request_failed`; live success is not established.
-If the smoke request fails:
+The user reports successful hosted prompts and no `llm_request_failed` during those tests.
+The exact Groq/RAG/MCP details and the specific SYN-001 scenario are only partially verified.
+Do not repeat the hosted smoke request without evidence of a failure. The separate local
+F006 evaluation did return an MCP search timeout; it is recorded as an operational failure,
+not a provider failure. If a hosted smoke request fails:
 
 - Do not blindly retry or change providers.
 - Verify that the host secret exists without printing its value, the app selected the
@@ -116,41 +124,41 @@ If the smoke request fails:
 
 ## 5. Run the bounded evaluation once
 
-After local deterministic checks and deployment smoke testing:
+The local partial attempt is recorded in `evaluation/results.md` and must remain intact. The
+existing CI workflow provides a clean Ubuntu run that performs one MCP-backed diagnostic
+case before the bounded evaluation. The diagnostic and full suite use separate output files;
+the job does not overwrite the checked-in partial results.
 
-1. Validate `evaluation/cases.json` contains 20-30 unique cases across policy,
-   multi-document, tool-requiring, ambiguous, and out-of-scope categories.
-2. Confirm expected-source IDs, case rubrics, required/forbidden tool constraints, and a
-   fixed 10-20 case latency subset. Do not randomize the subset between runs.
-3. Configure the existing Groq key locally through the standard `.env`/environment
-   mechanism and explicitly opt in:
+- k=3 source recall: 16/24 (66.7%).
+- k=5 source recall: 17/24 (70.8%).
 
-   ```powershell
-   .\.venv\Scripts\python evaluation\run_evaluation.py --live
-   ```
-
-4. The runner uses one existing `AgentSession`, the existing Groq adapter and stdio MCP
-   client. It makes requests sequentially and appends one privacy-safe JSONL result per
-   attempted case, including safe failure outcomes. Results retain the final user-visible
-   answer for review of synthetic cases, plus tool names/outcomes and source IDs, but not
-   tool arguments or raw provider payloads. The runner does not retry cases or run as part
-   of CI.
-5. If a provider failure prevents completion, record its known safe category or
-   `provider_failure_unknown`; stop further live calls when evidence indicates quota is
-   exhausted, and preserve completed rows. Do not rerun the entire evaluation merely to fill
-   missing cases. Report attempted, completed, failed, and not-run counts separately.
-6. Manually score groundedness and citation accuracy against the case evidence/rubric.
+1. Add `GROQ_API_KEY` under the repository's **Settings → Secrets and variables → Actions**
+   as an Actions secret. Do not put its value in workflow inputs, source, or logs.
+2. Commit and push the approved F006 changes to protected `main`; merge only after the
+   existing Ubuntu and Windows CI checks pass.
+3. In **Actions → Python CI → Run workflow**, select `main` and set
+   `run_live_evaluation` to `true`. The workflow checks out and records that exact commit,
+   waits for the existing test matrix, then runs the diagnostic case `EVAL-001`.
+4. If the diagnostic fails or does not successfully complete its required MCP search, the
+   full evaluation step is skipped. The artifact still includes the diagnostic result/log,
+   sanitized MCP trace, and checkout revision. Do not rerun after a failure without review.
+5. If the diagnostic succeeds, the runner executes the existing 20 cases sequentially,
+   including the fixed 10 latency samples and k=3/k=5 retrieval comparison. It does not retry
+   cases. It reports attempted, completed, provider-failed, operational-failed, and unrun
+   counts separately; an incomplete run has a failing job status but its outputs are retained.
+6. Download the `f006-evaluation-<commit-sha>` Actions artifact. Review `diagnostic.jsonl`,
+   `diagnostic.log`, `mcp-traces.jsonl`, `results.jsonl`, `results.md`,
+   `retrieval_comparison.json`, `evaluation.log`, and the recorded revision files. The
+   workflow artifact contains no API key.
+7. Manually score groundedness and citation accuracy against the case evidence/rubric.
    Score tool selection, workflow completion, escalation/clarification, and action safety
    from expected outcomes and the returned safe trace. Report numerator, denominator, and
    percentage for each metric; unavailable/provider-failed cases are not functional passes.
-7. Report p50 and p95 for the fixed 10-20 latency samples from this run. Use end-to-end
+8. Report p50 and p95 for the fixed 10 latency samples from the suite run. Use end-to-end
    `AgentSession.process_request` elapsed time (LLM plus MCP; not browser rendering), and
    identify the first request/cache condition. Use the nearest-rank percentile convention:
    sort durations and select rank `ceil(p * n)` using one-based rank. If a distinct hosted
    cold-start is observed, report it separately; do not fabricate a cold sample.
-8. Compare retrieval source recall at k=3 and k=5 for cases with expected source IDs by
-   reusing the active index and F001 retrieval code. This comparison makes no Groq calls and
-   does not change the app's production `k=5` setting.
 
 ## 6. Final submission evidence
 

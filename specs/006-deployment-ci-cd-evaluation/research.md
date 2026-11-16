@@ -53,17 +53,16 @@
 
 5. **Provider failure**
    - The F005 quickstart records a prior live browser request that returned
-     `llm_request_failed`; live provider success remains unverified and was not retried.
+     `llm_request_failed`. The user subsequently reported successful prompts on the deployed
+     app; no per-request trace or exact provider diagnostics were retained.
    - `GroqLLMClient` translates bad requests to `ProviderRequestError` with allowlisted
      diagnostics and converts other SDK API errors to the safe `llm_request_failed` code.
      The UI reports a safe error code rather than raw provider text.
-   - The first live action must be a single synthetic PTO request after host secrets, model
-     configuration, MCP discovery, and index integrity are checked. If it fails, do not
-     blindly retry. Inspect only existing safe diagnostics and host configuration; classify
-     `llm_request_failed` as a provider failure, and distinguish missing credentials,
-     request rejection, or quota only when the safe error code/diagnostic supports it.
-     Otherwise record an unknown provider failure, separately from MCP/index or response
-     behavior failures.
+   - The single F006 evaluation attempt received a Groq tool selection, then the local
+     `search_policy_documents` MCP call timed out after 302.20 seconds. This is recorded as
+     an operational failure, not a provider failure. The runner stopped without retrying.
+     Do not treat this local timeout as evidence of a hosted defect because the user reports
+     successful deployed prompts.
 
 6. **Streamlit Community Cloud**
    - The project owner selected Community Cloud, the existing Streamlit app, and a no-payment
@@ -88,7 +87,7 @@
 | Policy index | Generate and commit only the active `.hr_rag_index` snapshot from the current synthetic corpus. | Clean Community Cloud checkout needs an index; F005 prohibits startup-time index building; no storage service is needed. |
 | CI | Keep one existing GitHub Actions workflow and matrix; require its test jobs on protected `main`. | Existing CI already covers installs, lint, imports, app startup through AppTest, MCP stdio, and full pytest. |
 | Deployment trigger | Community Cloud tracks protected `main`; no separate deployment workflow. | Merges require existing CI checks and Community Cloud handles app deployment. |
-| Hosted live test | One deployed PTO request for synthetic `TEST-001`, 8 hours on `2026-02-01`. | Existing F004 contract has explicit expected balance/date/policy evidence and exercises the full UI-agent-MCP-RAG-Groq path. |
+| Hosted live test | One deployed PTO request for synthetic `SYN-001`, 8 hours on `2026-02-01`. | Checked-in synthetic data gives SYN-001 an 80-hour balance as of 2026-01-01. The smoke scenario exercises the existing UI-agent-MCP-RAG-Groq path. |
 | Evaluation | One sequential 20-30 case Groq run; time a fixed 10-20 subset; append each completed result. | Satisfies assignment counts while preserving completed output if quota is exhausted. |
 | Metric scoring | Human rubric for grounding/citations; trace/expected-outcome checks for operational measures; no LLM judge. | Simple, auditable, no second provider or evaluation framework. |
 | Comparison | F001 retrieval source recall at k=3 versus k=5 for cases with expected sources. | Existing retrieval API, no additional Groq calls, no production setting change. |
@@ -116,13 +115,14 @@
   snapshot work in a clean Community Cloud build.
 - Confirm the app can start the MCP stdio subprocess, access synthetic JSON fixtures, and
   load the embedding model within the host's current limits.
-- Confirm the Streamlit secret bridge works without exposing the key, then make one controlled
-  synthetic live request. Treat the prior `llm_request_failed` as unresolved until a
-  successful result is observed.
+- User reports successful hosted prompts, but the exact deployed SYN-001 workflow and
+  per-request Groq/RAG/MCP evidence were not retained. Do not repeat the hosted smoke test
+  absent a failure; document this scope limitation.
 - Confirm required GitHub status checks are configured for `main` and that Community Cloud
   tracks that branch.
-- Run the live evaluation once only after the deployment and local deterministic checks are
-  ready. Record quota/provider failures separately and stop if quota is exhausted.
+- The bounded live evaluation was attempted once after local deterministic checks. It stopped
+  on the first local MCP search timeout; preserve this partial result and do not rerun without
+  review of the operational blocker. No provider failure was observed.
 
 ## External Platform References
 

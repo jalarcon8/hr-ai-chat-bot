@@ -1,0 +1,425 @@
+{
+  "run_id": "20261116T064050Z-b78c2489",
+  "created_at": "2026-11-16T06:41:13.624863+00:00",
+  "cases_with_expected_sources": 15,
+  "expected_source_count": 24,
+  "source_recall_at_3": 0.6666666666666666,
+  "source_recall_at_5": 0.7083333333333334,
+  "matched_source_counts": {
+    "3": 16,
+    "5": 17
+  },
+  "per_case": [
+    {
+      "case_id": "EVAL-001",
+      "expected_source_ids": [
+        "HR-002"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-001",
+          "HR-002",
+          "HR-006"
+        ],
+        "5": [
+          "HR-001",
+          "HR-002",
+          "HR-006"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-002"
+        ],
+        "5": [
+          "HR-002"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-002",
+      "expected_source_ids": [
+        "HR-001",
+        "HR-003"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-002",
+          "HR-003"
+        ],
+        "5": [
+          "HR-002",
+          "HR-003"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-003"
+        ],
+        "5": [
+          "HR-003"
+        ]
+      },
+      "source_recall_at_3": 0.5,
+      "source_recall_at_5": 0.5
+    },
+    {
+      "case_id": "EVAL-003",
+      "expected_source_ids": [
+        "HR-004",
+        "SEC-001"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-002",
+          "HR-004"
+        ],
+        "5": [
+          "HR-001",
+          "HR-002",
+          "HR-004",
+          "HR-005"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-004"
+        ],
+        "5": [
+          "HR-004"
+        ]
+      },
+      "source_recall_at_3": 0.5,
+      "source_recall_at_5": 0.5
+    },
+    {
+      "case_id": "EVAL-004",
+      "expected_source_ids": [
+        "HR-001",
+        "SEC-001"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "IT-002",
+          "SEC-001"
+        ],
+        "5": [
+          "HR-001",
+          "IT-002",
+          "SEC-001"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "SEC-001"
+        ],
+        "5": [
+          "HR-001",
+          "SEC-001"
+        ]
+      },
+      "source_recall_at_3": 0.5,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-005",
+      "expected_source_ids": [
+        "HR-002",
+        "HR-003"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-002",
+          "HR-003"
+        ],
+        "5": [
+          "HR-002",
+          "HR-003"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-002",
+          "HR-003"
+        ],
+        "5": [
+          "HR-002",
+          "HR-003"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-006",
+      "expected_source_ids": [
+        "HR-004",
+        "SEC-001"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-001",
+          "HR-002",
+          "HR-005"
+        ],
+        "5": [
+          "HR-001",
+          "HR-002",
+          "HR-005"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [],
+        "5": []
+      },
+      "source_recall_at_3": 0.0,
+      "source_recall_at_5": 0.0
+    },
+    {
+      "case_id": "EVAL-007",
+      "expected_source_ids": [
+        "HR-005",
+        "IT-001",
+        "SEC-001"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-001",
+          "HR-005"
+        ],
+        "5": [
+          "HR-001",
+          "HR-005"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-005"
+        ],
+        "5": [
+          "HR-005"
+        ]
+      },
+      "source_recall_at_3": 0.3333333333333333,
+      "source_recall_at_5": 0.3333333333333333
+    },
+    {
+      "case_id": "EVAL-008",
+      "expected_source_ids": [
+        "FIN-001",
+        "HR-001"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "FIN-001",
+          "HR-001"
+        ],
+        "5": [
+          "FIN-001",
+          "HR-001"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "FIN-001",
+          "HR-001"
+        ],
+        "5": [
+          "FIN-001",
+          "HR-001"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-010",
+      "expected_source_ids": [
+        "HR-002"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-002"
+        ],
+        "5": [
+          "HR-001",
+          "HR-002"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-002"
+        ],
+        "5": [
+          "HR-002"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-011",
+      "expected_source_ids": [
+        "HR-002"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-001",
+          "HR-002"
+        ],
+        "5": [
+          "HR-001",
+          "HR-002",
+          "HR-006"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-002"
+        ],
+        "5": [
+          "HR-002"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-014",
+      "expected_source_ids": [
+        "HR-002"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-001",
+          "HR-002",
+          "HR-004"
+        ],
+        "5": [
+          "HR-001",
+          "HR-002",
+          "HR-003",
+          "HR-004"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-002"
+        ],
+        "5": [
+          "HR-002"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-015",
+      "expected_source_ids": [
+        "HR-004",
+        "SEC-001"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-004"
+        ],
+        "5": [
+          "BEN-001",
+          "HR-002",
+          "HR-004"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-004"
+        ],
+        "5": [
+          "HR-004"
+        ]
+      },
+      "source_recall_at_3": 0.5,
+      "source_recall_at_5": 0.5
+    },
+    {
+      "case_id": "EVAL-016",
+      "expected_source_ids": [
+        "HR-002"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-002"
+        ],
+        "5": [
+          "HR-002"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-002"
+        ],
+        "5": [
+          "HR-002"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-019",
+      "expected_source_ids": [
+        "HR-002"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-001",
+          "HR-002"
+        ],
+        "5": [
+          "HR-001",
+          "HR-002"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "HR-002"
+        ],
+        "5": [
+          "HR-002"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    },
+    {
+      "case_id": "EVAL-020",
+      "expected_source_ids": [
+        "SEC-001"
+      ],
+      "retrieved_source_ids": {
+        "3": [
+          "HR-005",
+          "IT-002",
+          "SEC-001"
+        ],
+        "5": [
+          "HR-001",
+          "HR-005",
+          "IT-002",
+          "SEC-001"
+        ]
+      },
+      "matched_source_ids": {
+        "3": [
+          "SEC-001"
+        ],
+        "5": [
+          "SEC-001"
+        ]
+      },
+      "source_recall_at_3": 1.0,
+      "source_recall_at_5": 1.0
+    }
+  ]
+}

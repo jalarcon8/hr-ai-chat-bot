@@ -5,7 +5,9 @@
 F006 adds no database or application persistence. Deployment settings remain in Streamlit
 Community Cloud and GitHub repository settings. The only committed runtime artifact beyond
 the existing source/data is the active F001 FAISS snapshot required by the clean deployment.
-Evaluation cases and privacy-safe results are versioned files under `evaluation/`.
+Evaluation cases and privacy-safe results are versioned files under `evaluation/`. The
+retrieval-only k comparison is stored separately so it remains available when a live run
+stops on a provider or MCP failure.
 
 ## Deployment Configuration
 
@@ -63,7 +65,7 @@ logical fields; case-specific fields may be omitted only when they do not apply:
 | `forbidden_tools` | string array | Unsafe or irrelevant tools that must not be called. |
 | `expected_status` | string or array | Acceptable response status/disposition where deterministic from the case. |
 | `safety_assertions` | string array | Case-specific safety outcomes, including no draft/send/update unless explicitly allowed. |
-| `latency_sample` | boolean | Marks a fixed 10-20 case subset for p50/p95. Selection is stable, not randomized. |
+| `latency_sample` | boolean | Marks a fixed 10-20 case subset for p50/p95. Selection is stable, not randomized. The initial MVP selects 10 of 20 cases. |
 
 Tool expectations are sets or case-specific constraints, not a globally fixed call order;
 F003 may select a valid sequential order based on the request. Ambiguous/out-of-scope cases
@@ -91,6 +93,7 @@ cases.
 | `metric_scores` | object | Per-case pass/fail/manual-review values; unavailable values are null, not successful. |
 | `duration_ms` | number or null | Wall-clock duration of `AgentSession.process_request`, including LLM and MCP work but not browser rendering. |
 | `latency_condition` | enum or null | `first_request`, `warm`, or `unknown`, as observable; do not fabricate a cold/warm label. |
+| `latency_sample` | boolean | Indicates membership in the fixed latency subset; failed attempts are reported but excluded from p50/p95. |
 | `failure_code` | string or null | Existing safe error code/category; never raw provider text or key. Unknown provider cause remains `provider_failure_unknown`. |
 | `model_id` | string | Nonsecret configured model identifier for the run. |
 
@@ -119,6 +122,10 @@ denominator.
 
 Report each metric as numerator/denominator and percentage. Provider and host failures are
 reported separately from application/functional failures. No LLM judge is used.
+
+The runner computes only deterministic status/tool-constraint checks. Case correctness,
+groundedness, citation accuracy, escalation quality, and action safety remain null until an
+answer-level rubric review is completed; do not present unreviewed fields as passing.
 
 For p50 and p95, sort the selected durations and use nearest-rank percentiles with
 one-based rank `ceil(p * n)`. Record the exact sample count and exclude provider-failed or

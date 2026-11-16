@@ -40,7 +40,10 @@ def test_configured_provider_model_supports_tool_calling(tmp_path):
                     "content": (
                         "For the user's HR policy question, call search_policy_documents once. "
                         "After receiving its result, provide a concise answer using only that "
-                        "evidence and finish without another tool call."
+                        "evidence and finish without another tool call. Return a JSON object "
+                        "with an answer string and final_disposition. For this compatibility "
+                        "check, recommend review by People Operations and set "
+                        "final_disposition to human_review_recommended."
                     ),
                 },
                 {
@@ -87,6 +90,8 @@ def test_configured_provider_model_supports_tool_calling(tmp_path):
                 pytest.fail("Provider did not finish synthesis after receiving the MCP result.")
             if not final.content or not final.content.strip():
                 pytest.fail("Provider returned no final response after receiving the MCP result.")
+            if final.final_disposition != "human_review_recommended":
+                pytest.fail("Provider did not return the requested final disposition.")
 
     try:
         asyncio.run(exercise())

@@ -32,6 +32,8 @@ class LLMCompletion:
     content: str | None
     tool_call: LLMToolCall | None
     assistant_message: dict[str, Any]
+    final_disposition: Literal["human_review_recommended"] | None = None
+    clarification_needed: Literal["employee_id"] | None = None
 
 
 class LLMClient(Protocol):

@@ -66,7 +66,9 @@ class HRAgent:
 
 - `user_input`: nonempty natural-language request.
 - `context`: optional caller-carried context, including a pending confirmation proposal from a
-  prior response. Feature 003 does not persist this context.
+  prior response. For `lookup_employee_profile` and `check_pto_balance`, it must include a
+  nonblank string `employee_id`. Only this field is authoritative for those calls; an ID in
+  `user_input` alone is not. Feature 003 does not persist this context.
 - `options`: optional validated per-request overrides such as `top_k` or `max_tool_calls`.
   Supported keys are `top_k`, `max_tool_calls`, and `max_tokens`; values must be positive
   integers.
@@ -78,7 +80,11 @@ class HRAgent:
 2. Let the LLM interpret the request and select tools. Do not route from keyword rules or a
    hardcoded workflow graph.
 3. If the model requests a tool, require one tool call for the turn; validate its name against
-   current MCP discovery and its arguments against the declared schema.
+   current MCP discovery and its arguments against the declared schema. For the two
+   employee-specific lookups, require valid caller context and an exact match between the
+   selected argument and `context.employee_id` before dispatch. Missing or invalid context
+   requests clarification; a mismatch raises `AgentRuntimeError("employee_id_mismatch")`.
+   This consistency check is not authentication or authorization.
 4. Invoke through `await mcp_client.call(name, arguments)`. Return the structured result to the
    LLM in the next turn. Repeat sequentially until a final response, clarification/refusal, or
    `max_tool_calls` bound.
@@ -261,6 +267,21 @@ explicitly and does not invoke any of the requested tools.
 
 Routine tests replace `LLMClient` with a deterministic fake. Model/provider failures are
 surfaced explicitly; the agent must not fabricate a final answer when synthesis fails.
+
+The internal `LLMCompletion` has optional
+`final_disposition: Literal["human_review_recommended"] | None = None` and
+`clarification_needed: Literal["employee_id"] | None = None` fields. The Groq adapter prompts
+for a JSON final answer and validates its object and allowlisted metadata in the application;
+it does not request JSON Object Mode or Structured Outputs. Native tool calls remain enabled.
+The two metadata fields cannot be combined or accompany a tool call. An employee-ID
+clarification returns the existing `clarification_needed` status and a fixed ID request, not
+the model's potentially unsupported answer. Omitted fields retain their existing defaults.
+These internal changes add no public `AgentResponse` fields or statuses.
+
+For Groq HTTP 400 errors, the existing error trace may include allowlisted error category and
+request-structure metadata, message roles, tool-call counts, and whether call/result IDs match.
+It never includes raw provider errors, message content, tool arguments or outputs, IDs, or
+credentials. Other provider failures retain their existing behavior.
 
 ## MCP Client Boundary
 

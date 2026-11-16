@@ -132,6 +132,7 @@ def test_agent_invokes_five_distinct_tools_over_mcp_with_confirmed_draft(context
             )
             response = await agent.process_request(
                 "Use policy evidence and synthetic employee data for TEST-001.",
+                context={"employee_id": "TEST-001"},
             )
 
             assert response.status == "answered"
@@ -177,5 +178,48 @@ def test_agent_invokes_five_distinct_tools_over_mcp_with_confirmed_draft(context
             ]
             assert context.calls() == expected_calls
             assert len(set(context.calls())) == 5
+
+    asyncio.run(exercise())
+
+
+def test_agent_records_human_review_disposition_after_successful_mcp_call(context):
+    llm = ScriptedLLM(
+        [
+            tool_completion(
+                "search_policy_documents",
+                {"question": "Can this arrangement be approved?", "k": 2},
+                "review-policy",
+            ),
+            final_completion(
+                "The candidate evidence does not establish eligibility. Please ask People "
+                "Operations to review the arrangement.",
+                final_disposition="human_review_recommended",
+            ),
+        ]
+    )
+
+    async def exercise():
+        async with connect(context, "provided") as mcp_client:
+            agent = await HRAgent.create(mcp_client, llm, AgentConfig())
+            response = await agent.process_request(
+                "Can this synthetic arrangement be approved?"
+            )
+
+            completion_events = [
+                event
+                for event in response.operational_trace.events
+                if event.get("event") == "completion"
+            ]
+            assert response.status == "partial"
+            assert response.citations
+            assert response.tool_calls[0].status == "success"
+            assert context.calls() == ["search_policy_documents"]
+            assert len(llm.requests) == 2
+            assert completion_events
+            assert all(event["outcome"] == "partial" for event in completion_events)
+            assert all(
+                event["disposition"] == "human_review_recommended"
+                for event in completion_events
+            )
 
     asyncio.run(exercise())

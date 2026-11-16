@@ -15,3 +15,11 @@ class AgentInitializationError(AgentError):
 
 class AgentRuntimeError(AgentError):
     """The agent could not complete the current model/tool exchange."""
+
+
+class ProviderRequestError(AgentRuntimeError):
+    """Provider failure with privacy-safe request diagnostics."""
+
+    def __init__(self, code: str, diagnostic: dict[str, object]) -> None:
+        super().__init__(code)
+        self.diagnostic = diagnostic

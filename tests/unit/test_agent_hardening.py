@@ -5,7 +5,7 @@ import pytest
 from hr_agent.agent import HRAgent
 from hr_agent.config import AgentConfig
 from hr_agent.errors import AgentRuntimeError
-from hr_agent.types import LLMCompletion
+from hr_agent.types import LLMCompletion, LLMToolCall
 from tests.unit.agent_orchestration_helpers import (
     FakeMCPClient,
     ScriptedLLM,
@@ -23,6 +23,49 @@ def test_multiple_native_tool_calls_are_rejected_before_execution():
         agent = await HRAgent.create(mcp, llm, AgentConfig())
         with pytest.raises(AgentRuntimeError, match="multiple_tool_calls"):
             await agent.process_request("Test request.")
+        assert not mcp.calls
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize(
+    "completion",
+    [
+        LLMCompletion(
+            "Please ask People Operations to review.",
+            None,
+            {"role": "assistant", "content": "Please ask People Operations to review."},
+            final_disposition="unsupported",
+        ),
+        LLMCompletion(
+            None,
+            LLMToolCall("call-1", "search_policy_documents", {"question": "policy"}),
+            {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": "call-1",
+                        "type": "function",
+                        "function": {
+                            "name": "search_policy_documents",
+                            "arguments": '{"question":"policy"}',
+                        },
+                    }
+                ],
+            },
+            final_disposition="human_review_recommended",
+        ),
+    ],
+)
+def test_agent_rejects_invalid_or_tool_call_disposition_before_mcp(completion):
+    mcp = FakeMCPClient()
+    llm = ScriptedLLM([completion])
+
+    async def exercise():
+        agent = await HRAgent.create(mcp, llm, AgentConfig())
+        with pytest.raises(AgentRuntimeError, match="invalid_final_disposition"):
+            await agent.process_request("Check the synthetic policy.")
         assert not mcp.calls
 
     asyncio.run(exercise())

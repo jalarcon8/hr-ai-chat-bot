@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 from types import SimpleNamespace
 
@@ -51,7 +52,13 @@ def test_llm_client_uses_dotenv_key_without_mutating_environment(monkeypatch, tm
     class FakeCompletions:
         async def create(self, **kwargs):
             return SimpleNamespace(
-                choices=[SimpleNamespace(message=SimpleNamespace(content="ok", tool_calls=None))]
+                choices=[
+                    SimpleNamespace(
+                        message=SimpleNamespace(
+                            content=json.dumps({"answer": "ok"}), tool_calls=None
+                        )
+                    )
+                ]
             )
 
     class FakeGroq:

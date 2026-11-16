@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from typing import Any, TypedDict
 
@@ -186,6 +187,19 @@ def _error_message(content: str, error_code: str) -> DisplayMessage:
         "status": "error",
         "error_code": error_code,
     }
+
+
+def _configure_groq_api_key_from_secrets() -> None:
+    if "GROQ_API_KEY" in os.environ:
+        return
+
+    try:
+        api_key = st.secrets.get("GROQ_API_KEY")
+    except FileNotFoundError:
+        return
+
+    if isinstance(api_key, str) and api_key.strip():
+        os.environ["GROQ_API_KEY"] = api_key
 
 
 def _show_message(message: DisplayMessage) -> None:
@@ -385,6 +399,7 @@ def _run_confirmation(confirmation: bool) -> None:
 
 
 def main() -> None:
+    _configure_groq_api_key_from_secrets()
     st.set_page_config(page_title="HR Assistant")
     st.title("HR Assistant")
     st.caption("Ask a question about fictional HR policies or workflows.")

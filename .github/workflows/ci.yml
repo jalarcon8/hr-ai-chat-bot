@@ -40,6 +40,11 @@ jobs:
       - name: Check Feature 003 import
         run: python -c "import hr_agent"
 
+      - name: Run Streamlit AppTest startup
+        run: python -m pytest tests/test_chat_interface.py -q
+        env:
+          AGENT_RUN_PROVIDER_SMOKE: "0"
+
       - name: Run Feature 003 MCP integration
         run: python -m pytest -q tests/integration/test_agent_mcp.py
         env:

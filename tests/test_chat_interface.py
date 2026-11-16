@@ -1,5 +1,7 @@
 import json
+import os
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 from streamlit.testing.v1 import AppTest
@@ -12,8 +14,13 @@ from hr_agent.types import (
     OperationalTrace,
     ToolInvocationRecord,
 )
+from hr_app import app as chat_app
 from hr_app import runtime
-from hr_app.app import PTO_PROMPT, REMOTE_WORK_PROMPT
+from hr_app.app import (
+    PTO_PROMPT,
+    REMOTE_WORK_PROMPT,
+    _configure_groq_api_key_from_secrets,
+)
 from hr_mcp.client import ClientError
 from tests.unit.agent_orchestration_helpers import (
     EMPLOYEE_RESULT,
@@ -24,6 +31,55 @@ from tests.unit.agent_orchestration_helpers import (
 )
 
 APP_PATH = Path(__file__).parents[1] / "src" / "hr_app" / "app.py"
+
+
+def test_host_secret_is_bridged_to_process_environment(monkeypatch):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+    monkeypatch.setattr(
+        chat_app,
+        "st",
+        SimpleNamespace(secrets={"GROQ_API_KEY": "host-test-key"}),
+    )
+
+    _configure_groq_api_key_from_secrets()
+
+    assert os.environ["GROQ_API_KEY"] == "host-test-key"
+
+
+def test_existing_process_secret_takes_precedence(monkeypatch):
+    monkeypatch.setenv("GROQ_API_KEY", "process-test-key")
+
+    class UnavailableSecrets:
+        def get(self, name):
+            raise AssertionError(f"Unexpected secret lookup: {name}")
+
+    monkeypatch.setattr(
+        chat_app,
+        "st",
+        SimpleNamespace(secrets=UnavailableSecrets()),
+    )
+
+    _configure_groq_api_key_from_secrets()
+
+    assert os.environ["GROQ_API_KEY"] == "process-test-key"
+
+
+def test_missing_streamlit_secrets_file_does_not_prevent_startup(monkeypatch):
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
+
+    class MissingSecrets:
+        def get(self, name):
+            raise FileNotFoundError("No secrets file.")
+
+    monkeypatch.setattr(
+        chat_app,
+        "st",
+        SimpleNamespace(secrets=MissingSecrets()),
+    )
+
+    _configure_groq_api_key_from_secrets()
+
+    assert "GROQ_API_KEY" not in os.environ
 
 
 class ContextMCPClient(FakeMCPClient):
@@ -305,6 +361,24 @@ def test_agent_and_dependency_failures_are_explicit(monkeypatch, failure, messag
     assert app.session_state["chat_history"][-1]["error_code"] == code
     assert any(message in item.value for item in app.error)
     assert not any("do not display this detail" in item.value for item in app.error)
+
+
+def test_provider_secret_is_not_displayed_in_request_errors(monkeypatch):
+    secret = "private-test-provider-key"
+    monkeypatch.setenv("GROQ_API_KEY", secret)
+    monkeypatch.setattr(
+        runtime,
+        "AgentSession",
+        lambda: RecordingAgentSession(error=AgentError("llm_request_failed")),
+    )
+
+    app = AppTest.from_file(str(APP_PATH)).run()
+    app.chat_input[0].set_value("A deterministic test question").run()
+
+    displayed = json.dumps(app.session_state["chat_history"])
+    assert "llm_request_failed" in displayed
+    assert secret not in displayed
+    assert all(secret not in item.value for item in app.error)
 
 
 def test_health_view_renders_json_and_uses_discovery_only(monkeypatch):

@@ -146,6 +146,21 @@ back to `confirm_action` on the same `HRAgent` instance with an explicit boolean
 The proposal is not stored; restarting or replacing the agent requires a new proposal. Set
 `AGENT_TRACE_PATH` to persist sanitized agent traces locally; trace write failures are errors.
 
+### Feature 005: Local Streamlit chat
+
+From the project root, start the browser interface:
+
+```powershell
+.\.venv\Scripts\python -m streamlit run src\hr_app\app.py
+```
+
+Ask a policy question or select the PTO or remote-work sample prompt. Provide a synthetic
+employee ID in the sidebar for employee-specific requests; IDs in message text are not treated
+as authoritative context. Use **Check MCP health** to render JSON app/MCP status; the probe
+performs MCP discovery only. Draft confirmation and cancellation reuse the session's agent and
+never send email. See [the F005 quickstart](specs/005-chat-interface/quickstart.md) for
+validation evidence and limitations.
+
 ## Feature 001: Local HR Policy RAG
 
 F001 provides a synchronous Python interface over the fictional Markdown and TXT policies in

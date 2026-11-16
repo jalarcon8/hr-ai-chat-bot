@@ -55,7 +55,8 @@ def test_agent_executes_result_dependent_policy_and_employee_sequences(first_too
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
         response = await agent.process_request(
-            "Use the policy evidence and the profile for synthetic employee SYN-001."
+            "Use the policy evidence and the profile for synthetic employee SYN-001.",
+            context={"employee_id": "SYN-001"},
         )
 
         assert response.status == "answered"

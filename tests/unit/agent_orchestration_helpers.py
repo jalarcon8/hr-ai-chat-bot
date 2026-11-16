@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from mcp.types import Tool
 
 from hr_agent.types import LLMCompletion, LLMToolCall
+from hr_mcp.models import ComplianceInput
 
 POLICY_EVIDENCE = {
     "document_id": "HR-004",
@@ -50,6 +51,7 @@ def discovered_tools():
             "required": ["employee_id"],
             "additionalProperties": False,
         },
+        "check_policy_compliance": ComplianceInput.model_json_schema(),
         "draft_hr_email": {
             "type": "object",
             "properties": {
@@ -151,11 +153,13 @@ def tool_completion(name, arguments, call_id):
     return LLMCompletion(None, call, assistant_message)
 
 
-def final_completion(answer):
+def final_completion(answer, *, final_disposition=None, clarification_needed=None):
     return LLMCompletion(
         answer,
         None,
         {"role": "assistant", "content": answer},
+        final_disposition=final_disposition,
+        clarification_needed=clarification_needed,
     )
 
 

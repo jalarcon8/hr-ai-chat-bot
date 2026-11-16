@@ -12,7 +12,7 @@ Feature 002 contracts.
 | Field | Type and meaning |
 |---|---|
 | `user_input` | Nonempty natural-language request. Used for the current model exchange; not copied verbatim into operational traces. |
-| `context` | Optional caller-carried data needed for this request, including a pending email-draft proposal/action identifier from a prior response. The agent does not persist it. |
+| `context` | Optional caller-carried data needed for this request, including `employee_id` for employee-specific lookups and a pending email-draft proposal/action identifier from a prior response. The agent does not persist it. |
 | `options` | Optional validated per-request overrides such as `max_tool_calls`, `top_k`, or output-token limit. |
 
 ## Discovered MCP Tool
@@ -32,6 +32,11 @@ in Feature 003.
 - The model selects from tools within Feature 003's supported scope. Before invocation, the
   agent validates the selected tool against the current discovery result and validates
   arguments against its declared schema.
+- For `lookup_employee_profile` and `check_pto_balance`, the sole authoritative ID is a
+  nonblank string supplied as `context.employee_id`. A missing or invalid ID requests
+  clarification; a selected ID that differs exactly from the caller's ID is rejected before
+  execution. Free-text IDs are not authoritative. This binds identity consistently; it does
+  not authenticate the caller or authorize access.
 - Unsupported tool capabilities or state-changing actions are refused; the model cannot
   expand the feature's business-operation scope.
 
@@ -96,6 +101,24 @@ remain distinct from valid `not_found` or `indeterminate` results.
 - A confirmed email-draft response clearly states that no email was sent. No send, approval,
   employee-record update, or persistent mutation is performed.
 
+## LLM Completion
+
+The internal `LLMCompletion` carries the final answer and tool-call selection for one provider
+turn. Its optional
+`final_disposition: Literal["human_review_recommended"] | None = None` is set only on a final
+completion, never on a tool-call turn. The provider adapter validates the structured final
+payload and supplies the disposition without deriving it from the answer text. Legacy callers
+that omit the field retain the default `None`.
+
+The optional `clarification_needed: Literal["employee_id"] | None = None` signals an
+employee-ID clarification on a final completion. It cannot coexist with a tool call or final
+disposition. The agent returns the existing clarification status with a fixed prompt rather
+than displaying unsupported model text.
+
+A set `human_review_recommended` disposition requires the accompanying user-facing answer to
+explicitly recommend human review. The agent maps it to the existing `partial` status; no
+public response field or status is added.
+
 ## Citation
 
 | Field | Type and meaning |
@@ -137,18 +160,21 @@ allowlisted `details`.
 | `tool_call` | Selected tool name, argument-name/summary allowlist, result category, duration, and evidence references. |
 | `confirmation` | Draft action identifier, `requested`/`confirmed`/`cancelled` outcome, and whether reconfirmation was required. |
 | `error` | Error category/code, affected tool if known, and recoverability category. |
-| `completion` | Final response status, tool-call count, citation count, and escalation/clarification outcome. |
+| `completion` | Final response status, tool-call count, citation count, and escalation/clarification outcome; optionally the allowlisted `disposition="human_review_recommended"`. |
 
 ### Trace requirements
 
 Traces include concise, observable intent categories, selected tools, outcome categories, and
 evidence/source references. An optional short decision summary may explain the tool selection
 at a user-observable level (for example, `policy evidence needed`); it must not expose internal
-reasoning.
+reasoning. The completion disposition is included only when present and is not inferred by
+parsing answer text.
 
 Traces MUST NOT contain hidden chain-of-thought, internal prompts, full user questions,
 credentials, full employee records, email bodies, or unrestricted raw tool arguments/results.
 Use an allowlist rather than storing model messages and attempting to redact them afterward.
+For Groq HTTP 400 errors, the error event may include only allowlisted provider error category,
+request structure, message roles, tool-call counts, and call/result-ID match status.
 
 ## Configuration
 

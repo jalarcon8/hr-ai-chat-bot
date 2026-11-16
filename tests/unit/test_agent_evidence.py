@@ -59,7 +59,8 @@ def test_synthesis_receives_and_cites_all_policy_and_employee_evidence():
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
         response = await agent.process_request(
-            "Compare the policy evidence with the profile for SYN-001."
+            "Compare the policy evidence with the profile for SYN-001.",
+            context={"employee_id": "SYN-001"},
         )
 
         assert response.status == "answered"
@@ -132,7 +133,9 @@ def test_missing_structured_record_is_preserved_and_reported():
 
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
-        response = await agent.process_request("Look up synthetic employee SYN-MISSING.")
+        response = await agent.process_request(
+            "Look up synthetic employee SYN-MISSING.", context={"employee_id": "SYN-MISSING"}
+        )
 
         assert response.status == "partial"
         assert response.tool_calls[0].status == "not_found"

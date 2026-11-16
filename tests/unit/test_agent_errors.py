@@ -53,7 +53,7 @@ def test_tool_failure_is_partial_and_a_new_request_can_try_again():
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
         first_response = await agent.process_request(
-            "Use policy evidence and the profile for SYN-001."
+            "Use policy evidence and the profile for SYN-001.", context={"employee_id": "SYN-001"}
         )
 
         assert first_response.status == "partial"
@@ -71,7 +71,8 @@ def test_tool_failure_is_partial_and_a_new_request_can_try_again():
         assert '"status": "error"' in failure_message["content"]
 
         second_response = await agent.process_request(
-            "Retry the profile lookup for synthetic employee SYN-001."
+            "Retry the profile lookup for synthetic employee SYN-001.",
+            context={"employee_id": "SYN-001"},
         )
         assert second_response.status == "answered"
         assert [name for name, _ in mcp_client.calls] == [
@@ -107,7 +108,7 @@ def test_model_reselection_does_not_retry_failed_call_in_same_request():
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
         response = await agent.process_request(
-            "Look up the profile for SYN-001."
+            "Look up the profile for SYN-001.", context={"employee_id": "SYN-001"}
         )
 
         assert response.status == "error"
@@ -146,7 +147,7 @@ def test_tool_timeout_is_reported_as_partial_failure():
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
         response = await agent.process_request(
-            "Use policy evidence and the profile for SYN-001."
+            "Use policy evidence and the profile for SYN-001.", context={"employee_id": "SYN-001"}
         )
 
         assert response.status == "partial"
@@ -173,7 +174,9 @@ def test_mcp_client_protocol_timeout_is_reported_as_timeout():
 
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
-        response = await agent.process_request("Look up the synthetic profile.")
+        response = await agent.process_request(
+            "Look up the synthetic profile.", context={"employee_id": "SYN-001"}
+        )
         assert response.status == "error"
         assert response.error_code == "timeout"
         assert response.tool_calls[0].status == "timeout"

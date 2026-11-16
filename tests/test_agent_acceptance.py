@@ -102,7 +102,10 @@ def test_structured_data_acceptance_requests_use_the_selected_tool(
 
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
-        response = await agent.process_request("Look up the requested synthetic record.")
+        response = await agent.process_request(
+            "Look up the requested synthetic record.",
+            context={"employee_id": arguments["employee_id"]},
+        )
 
         assert response.status == "answered"
         assert response.citations
@@ -163,7 +166,9 @@ def test_multistep_acceptance_requests_pass_each_result_to_the_next_turn(scenari
 
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
-        response = await agent.process_request("Combine policy evidence with synthetic data.")
+        response = await agent.process_request(
+            "Combine policy evidence with synthetic data.", context={"employee_id": "TEST-001"}
+        )
 
         assert response.status == "answered"
         assert {citation.source_type for citation in response.citations} == {
@@ -277,7 +282,9 @@ def test_tool_failures_are_reported_without_success_shaped_results(failure, expe
 
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
-        response = await agent.process_request("Look up synthetic employee TEST-001.")
+        response = await agent.process_request(
+            "Look up synthetic employee TEST-001.", context={"employee_id": "TEST-001"}
+        )
 
         assert response.status == "error"
         assert response.tool_calls[0].status in {"error", "timeout"}
@@ -329,7 +336,7 @@ def test_acceptance_trace_has_observable_fields_without_sensitive_values(tmp_pat
             llm_client,
             AgentConfig(trace_path=trace_path),
         )
-        response = await agent.process_request(question)
+        response = await agent.process_request(question, context={"employee_id": employee_id})
         trace = json.dumps(response.operational_trace.events) + trace_path.read_text(
             encoding="utf-8"
         )
@@ -409,8 +416,12 @@ def test_failed_call_is_not_retried_until_a_new_request():
 
     async def exercise():
         agent = await HRAgent.create(mcp_client, llm_client, AgentConfig())
-        first = await agent.process_request("Look up synthetic employee TEST-001.")
-        second = await agent.process_request("Retry the lookup for TEST-001.")
+        first = await agent.process_request(
+            "Look up synthetic employee TEST-001.", context={"employee_id": "TEST-001"}
+        )
+        second = await agent.process_request(
+            "Retry the lookup for TEST-001.", context={"employee_id": "TEST-001"}
+        )
 
         assert first.status == "error"
         assert any(

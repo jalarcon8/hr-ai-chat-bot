@@ -2,11 +2,13 @@ import asyncio
 import json
 from types import SimpleNamespace
 
+import httpx
 import pytest
+from groq import BadRequestError
 from mcp.types import Tool
 
 from hr_agent.config import AgentConfig
-from hr_agent.errors import AgentRuntimeError
+from hr_agent.errors import AgentRuntimeError, ProviderRequestError
 from hr_agent.llm import GroqLLMClient, mcp_tools_to_provider
 
 
@@ -78,7 +80,17 @@ def test_groq_adapter_serializes_tool_result_and_requests_one_sequential_call(mo
             ]
         ),
         SimpleNamespace(
-            choices=[SimpleNamespace(message=_message(content="Written approval is required."))]
+            choices=[
+                SimpleNamespace(
+                    message=_message(
+                        content=json.dumps(
+                            {
+                                "answer": "Written approval is required.",
+                            }
+                        )
+                    )
+                )
+            ]
         ),
     ]
     requests = []
@@ -129,6 +141,7 @@ def test_groq_adapter_serializes_tool_result_and_requests_one_sequential_call(mo
         final = await client.complete(messages, tools, config=config)
         assert final.tool_call is None
         assert final.content == "Written approval is required."
+        assert final.final_disposition is None
 
     asyncio.run(exercise())
 
@@ -137,8 +150,160 @@ def test_groq_adapter_serializes_tool_result_and_requests_one_sequential_call(mo
         assert request["n"] == 1
         assert request["parallel_tool_calls"] is False
         assert request["model"] == config.model_name
+        assert "response_format" not in request
+        assert request["tools"] == tools
     assert requests[1]["messages"][1]["tool_calls"][0]["id"] == "call-1"
     assert requests[1]["messages"][2]["role"] == "tool"
+
+
+def test_groq_adapter_maps_human_review_disposition_from_same_json_completion(monkeypatch):
+    provider_content = json.dumps(
+        {
+            "answer": (
+                "The available evidence does not establish eligibility. Please ask "
+                "People Operations to review the arrangement."
+            ),
+            "final_disposition": "human_review_recommended",
+        }
+    )
+
+    class FakeCompletions:
+        async def create(self, **kwargs):
+            assert kwargs["tools"]
+            assert "response_format" not in kwargs
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=_message(content=provider_content))]
+            )
+
+    class FakeGroq:
+        def __init__(self, *, api_key):
+            assert api_key == "test-key"
+            self.chat = SimpleNamespace(completions=FakeCompletions())
+
+    monkeypatch.setattr("hr_agent.llm.AsyncGroq", FakeGroq)
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+
+    async def exercise():
+        completion = await GroqLLMClient().complete(
+            [{"role": "user", "content": "Can I work internationally?"}],
+            [{"type": "function", "function": {"name": "lookup_employee_profile"}}],
+            config=AgentConfig(),
+        )
+        assert completion.content == (
+            "The available evidence does not establish eligibility. Please ask "
+            "People Operations to review the arrangement."
+        )
+        assert completion.final_disposition == "human_review_recommended"
+        assert completion.tool_call is None
+
+    asyncio.run(exercise())
+
+
+def test_groq_adapter_maps_employee_id_clarification(monkeypatch):
+    class FakeCompletions:
+        async def create(self, **kwargs):
+            return SimpleNamespace(choices=[SimpleNamespace(message=_message(
+                content='{"answer":"Please provide an ID.","clarification_needed":"employee_id"}'
+            ))])
+
+    client = GroqLLMClient()
+    client._client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
+
+    async def exercise():
+        completion = await client.complete([], [], config=AgentConfig())
+        assert completion.clarification_needed == "employee_id"
+        assert completion.final_disposition is None
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize(
+    ("content", "error_code"),
+    [
+        (
+            '{"answer":"Review is needed.","final_disposition":"unsupported"}',
+            "invalid_final_disposition",
+        ),
+        (
+            '{"answer":"Review is needed.","final_disposition":42}',
+            "invalid_final_disposition",
+        ),
+        ('{"answer":"Please clarify.","clarification_needed":"other"}', "invalid_clarification"),
+        ('{"answer":"Please clarify.","clarification_needed":42}', "invalid_clarification"),
+        (
+            (
+                '{"answer":"Please clarify.","clarification_needed":"employee_id",'
+                '"final_disposition":"human_review_recommended"}'
+            ),
+            "invalid_clarification",
+        ),
+        ('{"final_disposition":null}', "invalid_llm_completion"),
+        ("not JSON", "invalid_llm_completion"),
+        ('["not", "an", "object"]', "invalid_llm_completion"),
+    ],
+)
+def test_groq_adapter_rejects_invalid_final_completion(content, error_code, monkeypatch):
+    class FakeCompletions:
+        async def create(self, **kwargs):
+            return SimpleNamespace(
+                choices=[SimpleNamespace(message=_message(content=content))]
+            )
+
+    class FakeGroq:
+        def __init__(self, *, api_key):
+            self.chat = SimpleNamespace(completions=FakeCompletions())
+
+    monkeypatch.setattr("hr_agent.llm.AsyncGroq", FakeGroq)
+    monkeypatch.setenv("GROQ_API_KEY", "test-key")
+
+    async def exercise():
+        with pytest.raises(AgentRuntimeError, match=error_code):
+            await GroqLLMClient().complete([], [], config=AgentConfig())
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize("matching", [True, False])
+def test_groq_bad_request_diagnostic_excludes_private_data(matching):
+    private = "PRIVATE-PROMPT-ARGUMENT-RESULT-CREDENTIAL"
+    request = httpx.Request("POST", "https://example.invalid/chat/completions")
+    response = httpx.Response(400, request=request)
+    error = BadRequestError(
+        private,
+        response=response,
+        body={"error": {"type": "invalid_request_error", "code": "tool_use_failed",
+                        "message": private}},
+    )
+
+    class FakeCompletions:
+        async def create(self, **kwargs):
+            raise error
+
+    client = GroqLLMClient()
+    client._client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
+    messages = [
+        {"role": "user", "content": private},
+        {"role": "assistant", "tool_calls": [
+            {"id": private, "function": {"arguments": private}},
+        ]},
+        {"role": "tool", "tool_call_id": private if matching else "different", "content": private},
+    ]
+
+    async def exercise():
+        with pytest.raises(ProviderRequestError) as caught:
+            await client.complete(messages, [{}], config=AgentConfig())
+        diagnostic = caught.value.diagnostic
+        assert caught.value.code == "llm_request_failed"
+        assert diagnostic["category"] == "bad_request"
+        assert diagnostic["http_status"] == 400
+        assert diagnostic["provider_error_code"] == "tool_use_failed"
+        assert diagnostic["message_roles"] == ["user", "assistant", "tool"]
+        assert diagnostic["assistant_tool_call_count"] == 1
+        assert diagnostic["tool_result_count"] == 1
+        assert diagnostic["tool_call_result_ids_match"] is matching
+        assert private not in json.dumps(diagnostic)
+
+    asyncio.run(exercise())
 
 
 def test_groq_adapter_rejects_multiple_tool_calls(monkeypatch):

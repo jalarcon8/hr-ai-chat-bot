@@ -48,14 +48,22 @@ provider-free retrieval comparison.
 - [X] T013 Run local F001 retrieval comparison for expected-source cases at k=3 and k=5 and report measured recall without extra Groq calls (QR-044, QR-054). **Evidence:** 15 applicable cases / 24 expected source labels; k=3 retrieved 16/24 (66.7%), k=5 retrieved 17/24 (70.8%).
 - [~] T014 **[MANUAL: USER]** Use the existing Groq credential and explicit authorization for one suite run; score answer correctness, groundedness, citations, escalation, and action safety from retained outputs where available (QR-041–QR-043, QR-054, QR-057). **Evidence/blocker:** one suite run was attempted exactly once. Case `EVAL-001` selected `search_policy_documents`, then its MCP call timed out after 302.20 seconds (`mcp_tool_call_failed` / `timeout`). One bounded, provider-free MCP diagnostic reproduced a 60-second timeout (protocol 408) after successful initialization and discovery; no server tool-completion trace was written. A separate child-process check using the MCP environment loaded the embedding model in 8.02 seconds and completed direct index retrieval in 0.08 seconds. The active index and model cache exist, narrowing the unresolved fault to the MCP tool execution/response path rather than startup, discovery, or direct RAG. No Groq provider failure was observed; 19 cases were not run, 0/10 latency samples completed, and no HR answer was available for answer-level scoring. A diagnostic-first Ubuntu Actions job is now available in the existing workflow, but it has not been triggered. Its first diagnostic must succeed before the suite step runs; the run writes to a separate artifact directory and preserves the partial local results.
 
-**Milestone 3 review gate**: Stop here for review. The case set, runner, tests, and k comparison
-are complete, but the live evaluation remains blocked by an unresolved local MCP tool
-execution/response timeout. Startup, discovery, active index files, cached model availability,
-and direct child-process retrieval were verified. Provider failure count is zero; evaluation is
-incomplete, so no p50/p95 or answer-level correctness score is claimed. The existing partial
-evidence is preserved. The manual-only Ubuntu job is implemented but has not been triggered.
-Do not mark this milestone complete or start Milestone 4 until its diagnostic and, if allowed
-by that gate, bounded suite artifacts have been reviewed.
+**T014 Ubuntu follow-up (2026-11-17):** [Actions run #21](https://github.com/jalarcon8/hr-ai-chat-bot/actions/runs/44031373821)
+ran at `f7b505862480df4779c7696cfee047a05cf221a8`; both CI matrix jobs passed.
+The diagnostic failed with `llm_request_failed` after 5910.86 ms, but its MCP server trace
+confirms successful policy search with `HR-001`, `HR-002`, and `HR-006`. The original local
+MCP timeout did not recur; a subsequent Groq request failed. The ZIP digest was verified and
+the original artifacts/local partial results are preserved. No HTTP status or provider error
+category was retained, so the provider cause is unknown, not presumed to be quota or credentials.
+The narrow correction enables existing agent traces, preserves safe API failure categories,
+and defaults the manual workflow to diagnostic-only. Validation: 67 targeted tests, Ruff,
+workflow YAML assertions, Pylance source diagnostics, and diff checks passed.
+
+**Milestone 3 review gate:** Still incomplete. The local suite retains one operational failure;
+the separate Ubuntu diagnostic records one provider failure and no completed answer.
+The 20-case Ubuntu suite was correctly skipped; 0/10 required latency samples are complete.
+Review the findings before authorizing one diagnostic-only run with the improved safe trace.
+Do not run the full suite, mark this milestone complete, or start Milestone 4 yet.
 
 ## Milestone 4: Verification and closure
 

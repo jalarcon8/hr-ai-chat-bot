@@ -7,7 +7,14 @@ from collections.abc import Sequence
 from copy import deepcopy
 from typing import Any
 
-from groq import APIError, AsyncGroq, BadRequestError
+from groq import (
+    APIConnectionError,
+    APIError,
+    APIStatusError,
+    APITimeoutError,
+    AsyncGroq,
+    BadRequestError,
+)
 from mcp.types import Tool
 
 from .config import AgentConfig, get_agent_setting
@@ -33,14 +40,53 @@ def mcp_tools_to_provider(tools: Sequence[Tool]) -> list[dict[str, Any]]:
     return definitions
 
 
-def _bad_request_diagnostic(
-    error: BadRequestError, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
-) -> dict[str, object]:
+def _provider_error_diagnostic(error: APIError) -> dict[str, object]:
+    status = error.status_code if isinstance(error, APIStatusError) else None
+    if isinstance(error, APITimeoutError):
+        category = "timeout"
+    elif isinstance(error, APIConnectionError):
+        category = "connection_error"
+    elif status is not None and status >= 500:
+        category = "provider_server_error"
+    else:
+        category = {
+            400: "bad_request",
+            401: "authentication",
+            403: "permission_denied",
+            404: "not_found",
+            408: "timeout",
+            413: "request_too_large",
+            422: "request_validation",
+            429: "rate_limit",
+        }.get(status, "provider_error")
     body = error.body
     if isinstance(body, dict) and isinstance(body.get("error"), dict):
         body = body["error"]
     error_type = body.get("type") if isinstance(body, dict) else None
     error_code = body.get("code") if isinstance(body, dict) else None
+    allowed_codes = (
+        "tool_use_failed",
+        "invalid_api_key",
+        "model_not_found",
+        "model_decommissioned",
+        "rate_limit_exceeded",
+        "insufficient_quota",
+        "context_length_exceeded",
+    )
+    return {
+        "category": category,
+        "http_status": status,
+        "provider_error_type": (
+            error_type if error_type == "invalid_request_error" else "other"
+        ),
+        "provider_error_code": error_code if error_code in allowed_codes else "other",
+        "endpoint": "chat.completions.create",
+    }
+
+
+def _bad_request_diagnostic(
+    error: BadRequestError, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
+) -> dict[str, object]:
     roles: list[str] = []
     pending: set[str] = set()
     seen: set[str] = set()
@@ -72,15 +118,7 @@ def _bad_request_diagnostic(
             else:
                 pending.remove(call_id)
     return {
-        "category": "bad_request",
-        "http_status": 400,
-        "provider_error_type": (
-            error_type if error_type == "invalid_request_error" else "other"
-        ),
-        "provider_error_code": (
-            error_code if error_code == "tool_use_failed" else "other"
-        ),
-        "endpoint": "chat.completions.create",
+        **_provider_error_diagnostic(error),
         "request_fields": [
             "model", "messages", "tools", "tool_choice", "parallel_tool_calls", "n",
             "temperature", "max_tokens",
@@ -132,8 +170,10 @@ class GroqLLMClient:
             raise ProviderRequestError(
                 "llm_request_failed", _bad_request_diagnostic(exc, messages, tools)
             ) from None
-        except APIError:
-            raise AgentRuntimeError("llm_request_failed") from None
+        except APIError as exc:
+            raise ProviderRequestError(
+                "llm_request_failed", _provider_error_diagnostic(exc)
+            ) from None
 
         if not response.choices:
             raise AgentRuntimeError("empty_llm_response")

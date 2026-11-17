@@ -12,6 +12,11 @@ on:
         required: true
         type: boolean
         default: false
+      diagnostic_only:
+        description: Stop after the diagnostic case for review
+        required: true
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -100,6 +105,7 @@ jobs:
         id: mcp_diagnostic
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          AGENT_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/agent-traces.jsonl
           HR_MCP_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/mcp-traces.jsonl
         run: |
           set -o pipefail
@@ -107,9 +113,10 @@ jobs:
             | tee "$RUNNER_TEMP/f006-evaluation/diagnostic.log"
 
       - name: Run bounded 20-case evaluation
-        if: ${{ success() && steps.mcp_diagnostic.outcome == 'success' }}
+        if: ${{ success() && steps.mcp_diagnostic.outcome == 'success' && !inputs.diagnostic_only }}
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          AGENT_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/agent-traces.jsonl
           HR_MCP_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/mcp-traces.jsonl
         run: |
           set -o pipefail

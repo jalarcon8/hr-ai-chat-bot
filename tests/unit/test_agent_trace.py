@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
-from groq import BadRequestError
+from groq import APIStatusError, BadRequestError
 
 from hr_agent.agent import HRAgent
 from hr_agent.config import AgentConfig
@@ -126,11 +126,13 @@ def test_human_review_disposition_is_recorded_without_answer_or_private_data(tmp
     asyncio.run(exercise())
 
 
-def test_bad_request_diagnostic_is_persisted_without_provider_or_employee_data(tmp_path):
+@pytest.mark.parametrize("http_status", [400, 401, 429])
+def test_provider_diagnostic_is_persisted_without_provider_or_employee_data(tmp_path, http_status):
     private = "PRIVATE-REQUEST-PROVIDER-EMPLOYEE-DETAIL"
     request = httpx.Request("POST", "https://example.invalid/chat/completions")
-    response = httpx.Response(400, request=request)
-    error = BadRequestError(
+    response = httpx.Response(http_status, request=request)
+    error_class = BadRequestError if http_status == 400 else APIStatusError
+    error = error_class(
         private,
         response=response,
         body={"error": {"type": "invalid_request_error", "code": "tool_use_failed",
@@ -154,10 +156,11 @@ def test_bad_request_diagnostic_is_persisted_without_provider_or_employee_data(t
         event = json.loads(persisted)["events"][-1]
         assert event["outcome"] == "provider_failure"
         diagnostic = event["provider_diagnostic"]
-        assert diagnostic["message_roles"] == ["system", "user"]
-        assert diagnostic["http_status"] == 400
-        assert diagnostic["tool_call_result_ids_match"] is True
-        assert diagnostic["tool_definition_count"] == 5
+        assert diagnostic["http_status"] == http_status
+        if http_status == 400:
+            assert diagnostic["message_roles"] == ["system", "user"]
+            assert diagnostic["tool_call_result_ids_match"] is True
+            assert diagnostic["tool_definition_count"] == 5
 
     asyncio.run(exercise())
 

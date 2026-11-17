@@ -137,19 +137,24 @@ the job does not overwrite the checked-in partial results.
 2. Commit and push the approved F006 changes to protected `main`; merge only after the
    existing Ubuntu and Windows CI checks pass.
 3. In **Actions → Python CI → Run workflow**, select `main` and set
-   `run_live_evaluation` to `true`. The workflow checks out and records that exact commit,
-   waits for the existing test matrix, then runs the diagnostic case `EVAL-001`.
+   `run_live_evaluation` to `true`. Leave `diagnostic_only=true` (the default) while
+   investigating the provider failure; obtain review before triggering another live run.
+   The workflow checks out and records that exact commit, waits for the existing test
+   matrix, then runs the diagnostic case `EVAL-001`.
 4. If the diagnostic fails or does not successfully complete its required MCP search, the
    full evaluation step is skipped. The artifact still includes the diagnostic result/log,
-   sanitized MCP trace, and checkout revision. Do not rerun after a failure without review.
-5. If the diagnostic succeeds, the runner executes the existing 20 cases sequentially,
+   sanitized MCP/agent traces, and checkout revision. `agent-traces.jsonl` retains safe
+   provider categories, HTTP status, and allowlisted codes, never raw provider messages.
+   Do not rerun after a failure without review or assume quota/credential failure.
+5. Only when separately approved, set `diagnostic_only=false`. If the diagnostic succeeds,
+   the runner then executes the existing 20 cases sequentially,
    including the fixed 10 latency samples and k=3/k=5 retrieval comparison. It does not retry
    cases. It reports attempted, completed, provider-failed, operational-failed, and unrun
    counts separately; an incomplete run has a failing job status but its outputs are retained.
 6. Download the `f006-evaluation-<commit-sha>` Actions artifact. Review `diagnostic.jsonl`,
-   `diagnostic.log`, `mcp-traces.jsonl`, `results.jsonl`, `results.md`,
+   `diagnostic.log`, `mcp-traces.jsonl`, `agent-traces.jsonl`, `results.jsonl`, `results.md`,
    `retrieval_comparison.json`, `evaluation.log`, and the recorded revision files. The
-   workflow artifact contains no API key.
+   workflow artifact contains no API key. Suite outputs are absent for diagnostic-only runs.
 7. Manually score groundedness and citation accuracy against the case evidence/rubric.
    Score tool selection, workflow completion, escalation/clarification, and action safety
    from expected outcomes and the returned safe trace. Report numerator, denominator, and

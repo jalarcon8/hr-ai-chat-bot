@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
-from groq import BadRequestError
+from groq import APIConnectionError, APIStatusError, APITimeoutError, BadRequestError
 from mcp.types import Tool
 
 from hr_agent.config import AgentConfig
@@ -302,6 +302,62 @@ def test_groq_bad_request_diagnostic_excludes_private_data(matching):
         assert diagnostic["tool_result_count"] == 1
         assert diagnostic["tool_call_result_ids_match"] is matching
         assert private not in json.dumps(diagnostic)
+
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize(
+    ("status", "code", "category"),
+    [
+        (401, "invalid_api_key", "authentication"),
+        (403, "private-error", "permission_denied"),
+        (404, "model_not_found", "not_found"),
+        (429, "rate_limit_exceeded", "rate_limit"),
+        (429, "insufficient_quota", "rate_limit"),
+        (422, "private-error", "request_validation"),
+        (503, "private-error", "provider_server_error"),
+        (None, "connection", "connection_error"),
+        (None, "timeout", "timeout"),
+    ],
+)
+def test_provider_failures_retain_safe_category_without_response_data(status, code, category):
+    private = "PRIVATE-KEY-PROMPT-PROVIDER-RESPONSE"
+    request = httpx.Request(
+        "POST", "https://example.invalid/chat/completions",
+        headers={"Authorization": f"Bearer {private}"},
+    )
+    if status is not None:
+        error = APIStatusError(
+            private,
+            response=httpx.Response(status, request=request),
+            body={"error": {"code": code, "type": private, "message": private}},
+        )
+    elif code == "timeout":
+        error = APITimeoutError(request=request)
+    else:
+        error = APIConnectionError(message=private, request=request)
+
+    class FakeCompletions:
+        async def create(self, **kwargs):
+            raise error
+
+    client = GroqLLMClient()
+    client._client = SimpleNamespace(chat=SimpleNamespace(completions=FakeCompletions()))
+
+    async def exercise():
+        with pytest.raises(ProviderRequestError) as caught:
+            await client.complete([{"role": "user", "content": private}], [], config=AgentConfig())
+        diagnostic = caught.value.diagnostic
+        assert caught.value.code == "llm_request_failed"
+        assert diagnostic["category"] == category
+        assert diagnostic["http_status"] == status
+        assert diagnostic["provider_error_code"] == (
+            code if code in {
+                "invalid_api_key", "model_not_found", "rate_limit_exceeded", "insufficient_quota"
+            } else "other"
+        )
+        assert private not in json.dumps(diagnostic)
+        assert "private-error" not in json.dumps(diagnostic)
 
     asyncio.run(exercise())
 

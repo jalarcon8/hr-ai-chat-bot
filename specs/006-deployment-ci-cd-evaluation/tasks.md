@@ -114,6 +114,35 @@ outside-repository outputs and new artifacts. Historical T014 coverage/grades re
 unchanged. The owner subsequently approved protected-main publication and exactly one run;
 no live execution or merge is claimed at this publication checkpoint.
 
+### Coverage-first execution checkpoint (closed; stop for review)
+
+[PR #11](https://github.com/jalarcon8/hr-ai-chat-bot/pull/11) merged normally after both
+required checks passed in run 44244441769. Exactly one authorized Ubuntu dispatch,
+[44245002529](https://github.com/jalarcon8/hr-ai-chat-bot/actions/runs/44245002529),
+used `bb285af8b76a6252cc18d4998cc17b72617e6e06`. Both ordinary jobs passed 560 tests /
+5 opt-in live skips, Ruff, AppTest and MCP integration. Diagnostic, full-suite and old
+continuation steps skipped. The coverage step ran 118 seconds, then exited 1 after the
+fatal HTTP 429 `rate_limit_exceeded` stop; it had continued after four HTTP 400
+`tool_use_failed` outcomes. No case was retried and no second dispatch occurred.
+
+T014 remains partial: 8/13 selected cases attempted, 3 returned answers graded offline,
+5 provider failures, 0 operational/interrupted cases and 5 not run. Canonical coverage is
+15/20, with six graded answers and nine provider failures. New
+[report](../../evaluation/coverage-report.md), [metrics](../../evaluation/coverage-metrics.json),
+[scores](../../evaluation/coverage-scores.json) and
+[manifest](../../evaluation/coverage-evidence-manifest.json) preserve explicit denominators:
+groundedness 39/46, citations 21/35, tools 4/6, workflow 1/6, full correctness 0/6,
+observable safety 6/6 and clarification N/A (0 eligible).
+Only three new timing-panel samples qualify; p50/p95 remain unavailable.
+All nine raw artifact files and 46 historical hashes are preserved unchanged.
+Post-archive verification: 57 targeted provider-free tests, Ruff, Python syntax,
+workflow YAML/configuration, 94 relative Markdown links and evidence/arithmetic checks
+passed. A test-only history fixture was isolated so retained coverage evidence does not
+mask guard tests or break the fake successful-selection scenario; runtime protection is unchanged.
+T015's ordinary hosted checks are verified at the new checkout; local live acceptance,
+the complete employee demos and T018 submission actions remain open.
+Authorization is consumed. Stop for owner review without new live requests or debugging.
+
 ## Requirement-to-task coverage
 
 | Requirement | Implementation tasks | Verification tasks |

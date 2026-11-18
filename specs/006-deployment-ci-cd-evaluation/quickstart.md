@@ -140,7 +140,15 @@ the job does not overwrite the checked-in partial results.
    `run_live_evaluation` to `true`. Leave `diagnostic_only=true` (the default) while
    investigating the provider failure; obtain review before triggering another live run.
    The workflow checks out and records that exact commit, waits for the existing test
-   matrix, then runs the diagnostic case `EVAL-001`.
+   matrix, then runs only the selected `diagnostic_case` (default `EVAL-001`).
+   For the authorized isolated remote-work investigation, set
+   `diagnostic_case=EVAL-003` and keep `diagnostic_only=true`. This does not run
+   `EVAL-001` or the full suite. Dispatch it once after the selector change is merged;
+   preserve its artifact separately from previous runs and stop for review.
+   The equivalent runner option is
+   `--diagnostic --diagnostic-case EVAL-003 --output-dir <new-output-directory>`.
+   Unknown IDs or cases without a required MCP tool are rejected before live execution;
+   `--diagnostic-case` cannot be combined with `--live` or `--validate-only`.
 4. If the diagnostic fails or does not successfully complete its required MCP search, the
    full evaluation step is skipped. The artifact still includes the diagnostic result/log,
    sanitized MCP/agent traces, and checkout revision. `agent-traces.jsonl` retains safe

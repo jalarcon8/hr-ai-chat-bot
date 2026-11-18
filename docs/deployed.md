@@ -82,6 +82,12 @@ Windows MCP timeouts and hosted clarification mismatch are recorded in the
 to the owner; these findings do not establish that both deployed HR tasks reliably pass.
 No retry infrastructure or alternate provider was added.
 
+The subsequent [coverage run](../evaluation/coverage-report.md) also observed a fatal
+HTTP 429 `rate_limit_exceeded` and stopped without another run. This confirms rate
+limiting for that request, not the limit window, a credentials problem or deployed
+application failure. Coverage is 15/20 with six returned/graded answers; provider and
+quality limitations remain explicit. No new deployed-app request was made.
+
 ## Before submission
 
 Confirm URL access as the intended grader, the full entry-point path, current serving SHA

@@ -1,0 +1,443 @@
+{
+  "primary_definition": "Original Ubuntu primary suite plus both authorized continuations, each case at most once. Diagnostics and Windows attempts excluded; no replacement, duplicate pooling or inferred answers.",
+  "planned_cases": 20,
+  "attempted": 15,
+  "attempted_case_ids": [
+    "EVAL-001",
+    "EVAL-002",
+    "EVAL-003",
+    "EVAL-004",
+    "EVAL-005",
+    "EVAL-006",
+    "EVAL-007",
+    "EVAL-009",
+    "EVAL-010",
+    "EVAL-011",
+    "EVAL-013",
+    "EVAL-014",
+    "EVAL-015",
+    "EVAL-017",
+    "EVAL-018"
+  ],
+  "operationally_completed": 6,
+  "provider_failures": 9,
+  "operational_failures": 0,
+  "interrupted": 0,
+  "unattempted": 5,
+  "unattempted_case_ids": [
+    "EVAL-008",
+    "EVAL-012",
+    "EVAL-016",
+    "EVAL-019",
+    "EVAL-020"
+  ],
+  "graded_completed_answers": 6,
+  "correct_completed_answers": 0,
+  "incorrect_completed_answers": 6,
+  "ungraded_completed_answers": 0,
+  "category_coverage": {
+    "policy": {
+      "planned": 4,
+      "attempted": 4,
+      "completed_and_graded": 2,
+      "provider_failures": 2,
+      "operational_failures": 0,
+      "not_run": 0
+    },
+    "multi_document": {
+      "planned": 4,
+      "attempted": 3,
+      "completed_and_graded": 2,
+      "provider_failures": 1,
+      "operational_failures": 0,
+      "not_run": 1
+    },
+    "tool_requiring": {
+      "planned": 4,
+      "attempted": 3,
+      "completed_and_graded": 2,
+      "provider_failures": 1,
+      "operational_failures": 0,
+      "not_run": 1
+    },
+    "ambiguous": {
+      "planned": 4,
+      "attempted": 3,
+      "completed_and_graded": 0,
+      "provider_failures": 3,
+      "operational_failures": 0,
+      "not_run": 1
+    },
+    "out_of_scope": {
+      "planned": 4,
+      "attempted": 2,
+      "completed_and_graded": 0,
+      "provider_failures": 2,
+      "operational_failures": 0,
+      "not_run": 2
+    }
+  },
+  "scored_primary_metrics": {
+    "case_correctness": {
+      "passed": 0,
+      "scored": 6,
+      "rate": 0.0
+    },
+    "tool_selection": {
+      "passed": 4,
+      "scored": 6,
+      "rate": 0.6666666666666666
+    },
+    "workflow_completion": {
+      "passed": 1,
+      "scored": 6,
+      "rate": 0.16666666666666666
+    },
+    "clarification_escalation": {
+      "passed": 0,
+      "scored": 0,
+      "rate": null
+    },
+    "action_safety": {
+      "passed": 6,
+      "scored": 6,
+      "rate": 1.0
+    },
+    "groundedness": {
+      "supported": 39,
+      "reviewed": 46,
+      "rate": 0.8478260869565217,
+      "answer_coverage": 6
+    },
+    "citation_accuracy": {
+      "supported": 21,
+      "reviewed": 35,
+      "rate": 0.6,
+      "answer_coverage": 6
+    }
+  },
+  "scoring_coverage": {
+    "graded_answers": 6,
+    "planned": 20,
+    "attempted": 15,
+    "categories_with_answers": [
+      "policy",
+      "multi_document",
+      "tool_requiring"
+    ],
+    "categories_without_answers": [
+      "ambiguous",
+      "out_of_scope"
+    ]
+  },
+  "coverage_only": {
+    "workflow_run_id": 44245002529,
+    "run_id": "20261118T053901Z-3e710738",
+    "selected": 13,
+    "attempted": 8,
+    "completed": 3,
+    "provider_failures": 5,
+    "operational_failures": 0,
+    "interrupted": 0,
+    "not_run": 5,
+    "stop_reason": "fatal_provider_error",
+    "case_retries_observed": 0,
+    "started_journal_entries": 8,
+    "finished_journal_entries": 8,
+    "per_case_tool_activity": [
+      {
+        "case_id": "EVAL-017",
+        "tools": [],
+        "provider_diagnostic": {
+          "category": "bad_request",
+          "http_status": 400,
+          "provider_error_code": "tool_use_failed"
+        },
+        "failure_phase": "before_tool_execution"
+      },
+      {
+        "case_id": "EVAL-006",
+        "tools": [
+          {
+            "name": "search_policy_documents",
+            "outcome": "success"
+          }
+        ],
+        "provider_diagnostic": null,
+        "failure_phase": null
+      },
+      {
+        "case_id": "EVAL-010",
+        "tools": [
+          {
+            "name": "search_policy_documents",
+            "outcome": "success"
+          },
+          {
+            "name": "check_pto_balance",
+            "outcome": "success"
+          }
+        ],
+        "provider_diagnostic": null,
+        "failure_phase": null
+      },
+      {
+        "case_id": "EVAL-014",
+        "tools": [
+          {
+            "name": "search_policy_documents",
+            "outcome": "success"
+          },
+          {
+            "name": "check_pto_balance",
+            "outcome": "success"
+          }
+        ],
+        "provider_diagnostic": {
+          "category": "bad_request",
+          "http_status": 400,
+          "provider_error_code": "tool_use_failed"
+        },
+        "failure_phase": "after_tool_execution"
+      },
+      {
+        "case_id": "EVAL-018",
+        "tools": [],
+        "provider_diagnostic": {
+          "category": "bad_request",
+          "http_status": 400,
+          "provider_error_code": "tool_use_failed"
+        },
+        "failure_phase": "before_tool_execution"
+      },
+      {
+        "case_id": "EVAL-007",
+        "tools": [],
+        "provider_diagnostic": {
+          "category": "bad_request",
+          "http_status": 400,
+          "provider_error_code": "tool_use_failed"
+        },
+        "failure_phase": "before_tool_execution"
+      },
+      {
+        "case_id": "EVAL-011",
+        "tools": [
+          {
+            "name": "search_policy_documents",
+            "outcome": "success"
+          },
+          {
+            "name": "check_pto_balance",
+            "outcome": "success"
+          }
+        ],
+        "provider_diagnostic": null,
+        "failure_phase": null
+      },
+      {
+        "case_id": "EVAL-015",
+        "tools": [],
+        "provider_diagnostic": {
+          "category": "rate_limit",
+          "http_status": 429,
+          "provider_error_code": "rate_limit_exceeded"
+        },
+        "failure_phase": "before_tool_execution"
+      }
+    ],
+    "successful_mcp_tool_calls": 7,
+    "latency": {
+      "definition": "All thirteen new cases were predeclared as one panel. Non-error completed responses only; original latency_sample flags are preserved in raw rows but do not restrict this approved panel. No historical pooling.",
+      "qualifying_samples": 3,
+      "minimum_for_percentiles": 10,
+      "completed_duration_ms": {
+        "EVAL-006": 7941.12,
+        "EVAL-010": 2046.47,
+        "EVAL-011": 39463.83
+      },
+      "provider_failure_duration_ms": {
+        "EVAL-017": 1163.19,
+        "EVAL-014": 30737.97,
+        "EVAL-018": 8428.79,
+        "EVAL-007": 9492.31,
+        "EVAL-015": 10216.67
+      },
+      "p50_ms": null,
+      "p95_ms": null,
+      "cold_start_note": "All three completions were labeled warm by case ordinal; EVAL-006 includes first embedding/index load. No measured host/browser cold start."
+    },
+    "request_budget": {
+      "authorized_agent_requests": 13,
+      "observed_agent_attempts": 8,
+      "authorized_max_completion_operations": 52,
+      "sdk_default_retries_unchanged": 2,
+      "authorized_theoretical_max_http_attempts": 156,
+      "actual_completion_operations": null,
+      "actual_http_attempts": null,
+      "note": "The artifact does not instrument SDK completion/HTTP counts; do not report the authorized bound as measured usage."
+    }
+  },
+  "retrieval_comparison_unchanged": {
+    "evidence": "retrieval_comparison.json",
+    "cases": 15,
+    "expected_source_labels": 24,
+    "matched_at_3": 16,
+    "matched_at_5": 17
+  },
+  "grading_inputs": [
+    "offline-scores.json",
+    "completion-scores.json",
+    "coverage-scores.json"
+  ],
+  "case_outcomes": [
+    {
+      "case_id": "EVAL-001",
+      "category": "policy",
+      "outcome": "completed",
+      "duration_ms": 5431.65,
+      "case_correctness": false
+    },
+    {
+      "case_id": "EVAL-002",
+      "category": "policy",
+      "outcome": "completed",
+      "duration_ms": 1567.44,
+      "case_correctness": false
+    },
+    {
+      "case_id": "EVAL-003",
+      "category": "policy",
+      "outcome": "provider_failure",
+      "duration_ms": 2148.87,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-004",
+      "category": "policy",
+      "outcome": "provider_failure",
+      "duration_ms": 1270.22,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-005",
+      "category": "multi_document",
+      "outcome": "completed",
+      "duration_ms": 9779.27,
+      "case_correctness": false
+    },
+    {
+      "case_id": "EVAL-006",
+      "category": "multi_document",
+      "outcome": "completed",
+      "duration_ms": 7941.12,
+      "case_correctness": false
+    },
+    {
+      "case_id": "EVAL-007",
+      "category": "multi_document",
+      "outcome": "provider_failure",
+      "duration_ms": 9492.31,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-008",
+      "category": "multi_document",
+      "outcome": "not_run",
+      "duration_ms": null,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-009",
+      "category": "tool_requiring",
+      "outcome": "provider_failure",
+      "duration_ms": 7938.71,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-010",
+      "category": "tool_requiring",
+      "outcome": "completed",
+      "duration_ms": 2046.47,
+      "case_correctness": false
+    },
+    {
+      "case_id": "EVAL-011",
+      "category": "tool_requiring",
+      "outcome": "completed",
+      "duration_ms": 39463.83,
+      "case_correctness": false
+    },
+    {
+      "case_id": "EVAL-012",
+      "category": "tool_requiring",
+      "outcome": "not_run",
+      "duration_ms": null,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-013",
+      "category": "ambiguous",
+      "outcome": "provider_failure",
+      "duration_ms": 3493.42,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-014",
+      "category": "ambiguous",
+      "outcome": "provider_failure",
+      "duration_ms": 30737.97,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-015",
+      "category": "ambiguous",
+      "outcome": "provider_failure",
+      "duration_ms": 10216.67,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-016",
+      "category": "ambiguous",
+      "outcome": "not_run",
+      "duration_ms": null,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-017",
+      "category": "out_of_scope",
+      "outcome": "provider_failure",
+      "duration_ms": 1163.19,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-018",
+      "category": "out_of_scope",
+      "outcome": "provider_failure",
+      "duration_ms": 8428.79,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-019",
+      "category": "out_of_scope",
+      "outcome": "not_run",
+      "duration_ms": null,
+      "case_correctness": null
+    },
+    {
+      "case_id": "EVAL-020",
+      "category": "out_of_scope",
+      "outcome": "not_run",
+      "duration_ms": null,
+      "case_correctness": null
+    }
+  ],
+  "limitations": [
+    "15/20 attempt coverage, not the 20/20 target; fatal HTTP429 stopped five selected cases.",
+    "Only6/20 answers available and scored; nine provider failures and five unattempted cases have unavailable answers, not incorrect grades.",
+    "No completed primary ambiguous/out-of-scope answer; clarification/escalation metric remains N/A.",
+    "Three qualifying new latency samples; p50/p95 unavailable below the minimum ten.",
+    "Source-backed assistant judgments, not independent human acceptance.",
+    "Runner reports +dirty; exact tracked checkout is known but runtime dirty paths were not captured."
+  ]
+}

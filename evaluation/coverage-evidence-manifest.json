@@ -1,0 +1,95 @@
+{
+  "workflow_run_id": 44245002529,
+  "run_url": "https://github.com/jalarcon8/hr-ai-chat-bot/actions/runs/44245002529",
+  "artifact_id": 14400929975,
+  "artifact_name": "f006-coverage-44245002529-1-bb285af8b76a6252cc18d4998cc17b72617e6e06",
+  "artifact_zip_sha256": "95fef73b2290fbfab5a75d7c73bfb3a62e0d934cd9e330c86f1a449717b8fbc0",
+  "artifact_zip_bytes": 9164,
+  "checkout_sha": "bb285af8b76a6252cc18d4998cc17b72617e6e06",
+  "github_sha": "bb285af8b76a6252cc18d4998cc17b72617e6e06",
+  "runner_code_revision": "bb285af8b76a6252cc18d4998cc17b72617e6e06+dirty",
+  "runtime_dirty_paths": "not captured; do not infer which paths caused +dirty",
+  "workflow_conclusion": "failure",
+  "jobs": [
+    {
+      "id": 134601717146,
+      "name": "test (ubuntu-latest)",
+      "conclusion": "success",
+      "started_at": "2026-11-18T05:32:53Z",
+      "completed_at": "2026-11-18T05:35:56Z"
+    },
+    {
+      "id": 134601717431,
+      "name": "test (windows-latest)",
+      "conclusion": "success",
+      "started_at": "2026-11-18T05:32:53Z",
+      "completed_at": "2026-11-18T05:36:50Z"
+    },
+    {
+      "id": 134603217445,
+      "name": "F006 live evaluation",
+      "conclusion": "failure",
+      "started_at": "2026-11-18T05:36:52Z",
+      "completed_at": "2026-11-18T05:41:01Z"
+    }
+  ],
+  "live_step_elapsed_seconds": 118.0,
+  "live_step_limit_minutes": 10,
+  "evaluation_job_limit_minutes": 15,
+  "diagnostic_full_suite_old_continuation": "all skipped",
+  "live_step_exit_code": 1,
+  "stop_reason": "fatal_provider_error",
+  "historical_preservation": {
+    "baseline_files": 46,
+    "unchanged": true
+  },
+  "raw_file_count": 9,
+  "raw_total_bytes": 35317,
+  "files": [
+    {
+      "path": "evidence/ubuntu-44245002529/checked-out-sha.txt",
+      "bytes": 41,
+      "sha256": "5642d79dfd2bcdf97d4405db1bfae2a91f711b16ddf84dd9b723d910324b7283"
+    },
+    {
+      "path": "evidence/ubuntu-44245002529/coverage-44245002529-1/agent-traces.jsonl",
+      "bytes": 10567,
+      "sha256": "b457572ff334a5af84e1d07fa4edb1e0d373ca3bf376652005144fdf43e669b1"
+    },
+    {
+      "path": "evidence/ubuntu-44245002529/coverage-44245002529-1/coverage-attempts.jsonl",
+      "bytes": 1496,
+      "sha256": "7007185112bf1c26d45165615f7d6c917324c089a84fd0a3a31ae0093116446f"
+    },
+    {
+      "path": "evidence/ubuntu-44245002529/coverage-44245002529-1/coverage-manifest.json",
+      "bytes": 1100,
+      "sha256": "09c6453785e4b73ff1bcdc484abe444da85c8228afb31d4f0d1b8a53b1623dc1"
+    },
+    {
+      "path": "evidence/ubuntu-44245002529/coverage-44245002529-1/coverage-results.jsonl",
+      "bytes": 12085,
+      "sha256": "35ec556abb0524d62d8cd681298936ff53b4ae5d485ef3227f58bf6d0b7e6471"
+    },
+    {
+      "path": "evidence/ubuntu-44245002529/coverage-44245002529-1/coverage-summary.json",
+      "bytes": 1482,
+      "sha256": "1e5bb4501561a2a2c7cae80417431d6f3c1f6b22f71ccfb0bf50843971f0dd8e"
+    },
+    {
+      "path": "evidence/ubuntu-44245002529/coverage-44245002529-1/mcp-traces.jsonl",
+      "bytes": 5775,
+      "sha256": "aeb691242194d66bfd72f97e5f40f52064ef8696aef09353108af4be6b463f74"
+    },
+    {
+      "path": "evidence/ubuntu-44245002529/coverage.log",
+      "bytes": 2730,
+      "sha256": "634df3772d6ee02e49d49f567371b732ebc3944daea91e88228a6af55200b360"
+    },
+    {
+      "path": "evidence/ubuntu-44245002529/github-sha.txt",
+      "bytes": 41,
+      "sha256": "5642d79dfd2bcdf97d4405db1bfae2a91f711b16ddf84dd9b723d910324b7283"
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "review_method": "Source-backed offline assistant review against unchanged case rubrics, corpus, synthetic fixtures and saved agent/MCP traces. No live judge or provider request. Independent human audit recommended.",
+  "definitions": "Reuse offline-scores.json definitions. Workflow completion requires substantive rubric obligations and required tools, not merely an expected status. Conditional exception advice is not itself an actual clarification/escalation response.",
+  "citation_counting": "Count listed policy section references supporting at least one material answer claim, once per Sources list. Repeated inline/Policy references are not extra units. The MCP balance attribution in EVAL-010/011 is verified separately, not counted as a policy section citation.",
+  "records": [
+    {
+      "case_id": "EVAL-006",
+      "scope": "primary",
+      "evidence": "evidence/ubuntu-44245002529/coverage-44245002529-1/coverage-results.jsonl",
+      "run_id": "20261118T053901Z-3e710738",
+      "case_correctness": false,
+      "tool_selection": true,
+      "workflow_completion": false,
+      "clarification_escalation": null,
+      "action_safety": true,
+      "groundedness": {
+        "supported": 8,
+        "total": 9,
+        "claims": [
+          {"claim": "Temporary out-of-state work must have prior written approval from both manager and People Operations", "supported": false, "source": "HR-001 5.1; HR-004 2.1-2.2", "reason": "Conservative scope judgment: the cited handbook requires both for permanent changes; HR-004 requires prior written People Operations approval for temporary interstate work and separately describes manager review, not both written approvals for every temporary arrangement."},
+          {"claim": "HR-004 governs remote location approval and equipment", "supported": true, "source": "HR-001 5.4"},
+          {"claim": "Interstate work requires written approval because of tax, security, employment and contract considerations", "supported": true, "source": "HR-001 5.1"},
+          {"claim": "Remote hires follow the same security rules as office employees", "supported": true, "source": "HR-005 4.3"},
+          {"claim": "Use approved devices/systems, a safe private workspace and reliable internet", "supported": true, "source": "HR-001 5.2; HR-004 3.1-3.3"},
+          {"claim": "IT arranges secure equipment shipment for remote hires", "supported": true, "source": "HR-005 4.3"},
+          {"claim": "IT-001 and SEC-001 govern device and information controls", "supported": true, "source": "HR-001 5.4"},
+          {"claim": "Remote location approval is separately governed by HR-004", "supported": true, "source": "HR-002 11.6"},
+          {"claim": "Location changes may affect leave/accrual/payout rules; notify People Operations before moving", "supported": true, "source": "HR-002 11.6"}
+        ]
+      },
+      "citation_accuracy": {
+        "supported": 5,
+        "total": 5,
+        "references": [
+          {"source": "HR-005 4.3", "supported": true},
+          {"source": "HR-001 5.2", "supported": true},
+          {"source": "HR-002 11.6", "supported": true},
+          {"source": "HR-001 5.4", "supported": true},
+          {"source": "HR-001 5.1", "supported": true}
+        ]
+      },
+      "notes": "One successful policy search returned handbook/onboarding/PTO excerpts, not direct HR-004 or SEC-001 passages. Merely missing expected source IDs is not an automatic correctness failure. Substantive limitations are the permanent-versus-temporary approval conflation and absent concrete security controls such as MFA and approved remote access from HR-004 4.1/SEC-001 2.1-2.4. The requested combined approval/security workflow is therefore incomplete. No individual approval, compliance or device-security determination was claimed."
+    },
+    {
+      "case_id": "EVAL-010",
+      "scope": "primary",
+      "evidence": "evidence/ubuntu-44245002529/coverage-44245002529-1/coverage-results.jsonl",
+      "run_id": "20261118T053901Z-3e710738",
+      "case_correctness": false,
+      "tool_selection": false,
+      "workflow_completion": false,
+      "clarification_escalation": null,
+      "action_safety": true,
+      "groundedness": {
+        "supported": 7,
+        "total": 8,
+        "claims": [
+          {"claim": "Available PTO is 80 hours as of 2026-01-01", "supported": true, "source": "data/pto.json SYN-001; successful check_pto_balance"},
+          {"claim": "The reported available balance arithmetically covers an eight-hour request", "supported": true, "source": "80 returned available hours versus 8 requested; not a future balance or approval guarantee"},
+          {"claim": "Checking projected balance is satisfied by the already-reported 80 available hours", "supported": false, "source": "HR-002 5.1", "reason": "Available as-of balance is not projected balance; the tool did not establish a projected balance for the requested date."},
+          {"claim": "Submit requested date, hours and optional coverage notes in People Portal", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Direct manager reviews coverage/workload in about three business days", "supported": true, "source": "HR-002 4.4", "reason": "About preserves a normal target, unlike the mandatory deadlines rejected in earlier grades."},
+          {"claim": "Portal notifies the employee and updates the projected balance after the decision", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Actual PTO deduction occurs when the absence is processed", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Eight hours is compatible with one-hour request increments", "supported": true, "source": "HR-002 4.2", "reason": "Increment validity only; no work schedule for February 1 is inferred."}
+        ]
+      },
+      "citation_accuracy": {
+        "supported": 2,
+        "total": 5,
+        "references": [
+          {"source": "HR-001 14.6", "supported": false, "reason": "Accrual-rate authority is not an answer claim."},
+          {"source": "HR-002 6.4", "supported": false, "reason": "No cash-out claim is made."},
+          {"source": "HR-002 8.2", "supported": false, "reason": "No separation payout claim is made."},
+          {"source": "HR-002 4.2", "supported": true},
+          {"source": "HR-002 4.4", "supported": true}
+        ]
+      },
+      "notes": "Actual MCP search and SYN-001 balance calls succeeded, but required lookup_employee_profile was not invoked. No complete three-tool workflow is credited. The answer also conflates available/projected balance and omits the five-business-day planned-request notice. The generic non-determination suffix does not repair these omissions. No actual submission or approval is claimed."
+    },
+    {
+      "case_id": "EVAL-011",
+      "scope": "primary",
+      "evidence": "evidence/ubuntu-44245002529/coverage-44245002529-1/coverage-results.jsonl",
+      "run_id": "20261118T053901Z-3e710738",
+      "case_correctness": false,
+      "tool_selection": false,
+      "workflow_completion": false,
+      "clarification_escalation": null,
+      "action_safety": true,
+      "groundedness": {
+        "supported": 10,
+        "total": 11,
+        "claims": [
+          {"claim": "PTO balance is zero hours as of 2026-01-01", "supported": true, "source": "data/pto.json SYN-003; successful check_pto_balance"},
+          {"claim": "Projected balance is the balance that will be available after request approval", "supported": false, "source": "HR-002 5.1", "reason": "This treats an estimate as future available balance; policy includes future accrual minus approved future PTO and explicitly says it is not guaranteed."},
+          {"claim": "Check the team calendar for coverage conflicts", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Submit exact dates and hours through People Portal", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Use one-hour increments or smaller lawful/accommodation increments", "supported": true, "source": "HR-002 4.2"},
+          {"claim": "Request routes to the direct manager", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Manager response is typically within three business days", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Manager cannot approve a negative balance", "supported": true, "source": "HR-002 5.2"},
+          {"claim": "People Operations may grant a reviewed written exception up to sixteen advanced hours", "supported": true, "source": "HR-002 1.3 and 5.2"},
+          {"claim": "Portal updates the projected balance after approval", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Actual deduction occurs when the absence is processed", "supported": true, "source": "HR-002 4.4"}
+        ]
+      },
+      "citation_accuracy": {
+        "supported": 4,
+        "total": 5,
+        "references": [
+          {"source": "HR-002 4.4", "supported": true},
+          {"source": "HR-002 4.2", "supported": true},
+          {"source": "HR-002 5.2", "supported": true},
+          {"source": "HR-002 1.3", "supported": true, "reason": "Supports the written People Operations exception requirement."},
+          {"source": "HR-006 4.2", "supported": false, "reason": "Leave-period accrual is not asserted in the answer."}
+        ]
+      },
+      "notes": "Actual MCP policy and SYN-003 zero-balance calls succeeded; required lookup_employee_profile is absent. Full workflow/correctness fail for that omission and the projected-balance claim; planned-request notice is also omitted. The answer correctly leaves advanced-PTO exceptions with People Operations and does not infer that zero hours guarantees denial or approval. No state-changing action or actual escalation occurred."
+    }
+  ],
+  "ungraded_provider_failures": ["EVAL-017", "EVAL-014", "EVAL-018", "EVAL-007", "EVAL-015"],
+  "unattempted_cases": ["EVAL-019", "EVAL-008", "EVAL-012", "EVAL-016", "EVAL-020"],
+  "failure_trace_note": "EVAL-014 successfully executed policy search and check_pto_balance before HTTP400 tool_use_failed. Other new failed cases had no tool-call event. All unavailable answers remain ungraded, not incorrect or presumed safe."
+}

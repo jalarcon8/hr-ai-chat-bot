@@ -1,0 +1,14 @@
+/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/pydantic_settings/sources/utils.py:51: IncompleteFieldDefinitionWarning: Field 'lifespan' has an incomplete definition: its annotation contains an unresolved forward reference, so settings sources may fail to correctly resolve its value. Call `model_rebuild()` on the model where the field is defined, once all the referenced types are defined.
+  warnings.warn(  # noqa: B028  (called from many sources at differing depths, so no stacklevel is correct)
+[11/18/26 05:39:08] INFO     Load pretrained          SentenceTransformer.py:218
+                             SentenceTransformer:                               
+                             sentence-transformers/al                           
+                             l-MiniLM-L6-v2                                     
+[11/18/26 05:39:10] INFO     Loading faiss with AVX512 support.    loader.py:113
+[11/18/26 05:39:11] INFO     Successfully loaded faiss with AVX512 loader.py:115
+                             support.                                           
+                    INFO     Failed to load GPU Faiss: name      __init__.py:173
+                             'GpuIndexIVFFlat' is not defined.                  
+                             Will not load constructor refs for                 
+                             GPU indexes.                                       
+{"run_id": "20261118T053901Z-3e710738", "code_revision": "bb285af8b76a6252cc18d4998cc17b72617e6e06+dirty", "model_id": "openai/gpt-oss-20b", "case_ids": ["EVAL-017", "EVAL-006", "EVAL-010", "EVAL-014", "EVAL-018", "EVAL-007", "EVAL-011", "EVAL-015", "EVAL-019", "EVAL-008", "EVAL-012", "EVAL-016", "EVAL-020"], "timing_panel": ["EVAL-017", "EVAL-006", "EVAL-010", "EVAL-014", "EVAL-018", "EVAL-007", "EVAL-011", "EVAL-015", "EVAL-019", "EVAL-008", "EVAL-012", "EVAL-016", "EVAL-020"], "live_step_timeout_minutes": 10, "case_retries": 0, "diagnostic": "skipped; previous successful diagnostic preserved separately", "retrieval_comparison": "reuse evaluation/retrieval_comparison.json unchanged", "max_nonexempt_provider_operational_failures": 3, "failure_limit_exemption": "HTTP 400 tool_use_failed only; fatal checks unchanged", "overall_job_timeout_minutes": 15, "max_completion_calls": 52, "sdk_default_retries": 2, "max_sdk_http_attempts_estimate": 156, "attempted": 8, "completed_responses": 3, "provider_failures": 5, "operational_failures": 0, "not_run": 5, "stop_reason": "fatal_provider_error", "qualifying_latency_samples": 3, "latency_definition": "non-error completed responses, including incorrect/clarification", "p50_ms": null, "p95_ms": null, "answer_grades": "pending separate offline rubric review"}

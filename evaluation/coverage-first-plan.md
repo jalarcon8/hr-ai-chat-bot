@@ -105,3 +105,7 @@ whitespace checks passed. Model/prompts/tools/application, dataset and prior res
 At the preparation checkpoint, changes were local and no live command was run.
 The owner's subsequent approval authorizes publication through protected main and exactly
 one coverage dispatch under the limits above; it does not authorize retries or another run.
+
+Execution is now closed: [run results](coverage-report.md) record eight attempted cases,
+three answers, five provider failures and a fatal HTTP 429 stop. Five selected cases were
+not run. The single-run authorization is consumed; this contract is not permission to rerun.

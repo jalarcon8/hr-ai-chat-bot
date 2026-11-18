@@ -652,6 +652,10 @@ def test_coverage_retains_fatal_category_stop_even_with_tool_failure_code(tmp_pa
 
 
 def test_coverage_selects_only_unattempted_cases_and_reserves_new_artifacts(tmp_path, monkeypatch):
+    prior = json.loads(
+        (evaluation.EVALUATION_DIR / "completion-metrics.json").read_text()
+    )["attempted_case_ids"]
+    monkeypatch.setattr(evaluation, "EVALUATION_DIR", tmp_path / "empty-history")
     output = tmp_path / "fresh"
     monkeypatch.setattr(sys, "platform", "linux")
     monkeypatch.setattr(evaluation, "_git_revision", lambda: "sha")
@@ -681,9 +685,6 @@ def test_coverage_selects_only_unattempted_cases_and_reserves_new_artifacts(tmp_
     monkeypatch.setattr(evaluation, "run_cases", fake_run_cases)
     original_cases = load_cases()
     assert evaluation.run_continuation(output, coverage_first=True)
-    prior = json.loads(
-        (evaluation.EVALUATION_DIR / "completion-metrics.json").read_text()
-    )["attempted_case_ids"]
     assert len(observed) == len(set(observed)) == 13
     assert set(observed) == {case["case_id"] for case in original_cases} - set(prior)
     assert observed == [
@@ -707,6 +708,7 @@ def test_coverage_selects_only_unattempted_cases_and_reserves_new_artifacts(tmp_
 def test_coverage_rejects_unsafe_configuration_before_creating_session(
     tmp_path, monkeypatch, guard
 ):
+    monkeypatch.setattr(evaluation, "EVALUATION_DIR", tmp_path / "empty-history")
     output = tmp_path / "fresh"
     monkeypatch.setattr(sys, "platform", "linux")
     monkeypatch.setattr(
@@ -722,7 +724,8 @@ def test_coverage_rejects_unsafe_configuration_before_creating_session(
         str((tmp_path if guard == "mcp_trace" else output) / "mcp.jsonl"),
     )
     monkeypatch.setattr(evaluation, "AgentSession", lambda _config: pytest.fail("live session"))
-    with pytest.raises(ValueError):
+    message = "three-tool limit" if guard == "tool_budget" else "new output directory"
+    with pytest.raises(ValueError, match=message):
         evaluation.run_continuation(output, coverage_first=True)
     assert not output.exists()
 
@@ -731,6 +734,7 @@ def test_coverage_rejects_unsafe_configuration_before_creating_session(
 def test_coverage_preflight_rejects_prior_attempt_or_repository_output(
     tmp_path, monkeypatch, history
 ):
+    monkeypatch.setattr(evaluation, "EVALUATION_DIR", tmp_path / "empty-history")
     monkeypatch.setattr(sys, "platform", "linux")
     monkeypatch.setattr(evaluation, "_live_config", lambda: pytest.fail("live configuration"))
     if history == "repository_output":
@@ -744,7 +748,8 @@ def test_coverage_preflight_rejects_prior_attempt_or_repository_output(
             **({"state": "started"} if history == "started_journal" else {"outcome": "completed"}),
         }) + "\n")
         output = tmp_path / "fresh"
-    with pytest.raises(ValueError, match="already attempted|outside the repository"):
+    message = "outside the repository" if history == "repository_output" else "already attempted"
+    with pytest.raises(ValueError, match=message):
         evaluation.run_continuation(output, coverage_first=True)
 
 

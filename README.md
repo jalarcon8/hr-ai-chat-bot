@@ -14,30 +14,27 @@ The project prioritizes a lightweight, modular architecture that satisfies the a
 - Repository: <https://github.com/jalarcon8/hr-ai-chat-bot>
 - Recorded demonstration: **pending; no demo link supplied**.
 
-The owner reports successful deployed prompts. The single authorized Ubuntu continuation
-has finished, stopping at its three-provider-failure limit without case retries. Across the
-canonical Ubuntu primary results: **7/20 attempted, 3 answers returned and graded,
-4 provider failures, 0 operational failures, 13 unattempted**. Diagnostics and Windows
-timeouts remain separate. Offline source-backed review passes 0/3 full answer rubrics;
-groundedness is 14/18 claims and citation accuracy 10/20 section references.
-Only one new latency sample qualified, so required p50/p95 remain unavailable.
+The owner reports successful deployed prompts. The single authorized coverage run increased
+canonical Ubuntu coverage to **15/20 attempted, 6 answers returned and graded,
+9 provider failures, 0 operational failures, 5 unattempted**. It continued through four
+HTTP 400 tool-use rejections, then stopped at HTTP **429 rate_limit_exceeded**, as required.
+Diagnostics and Windows timeouts remain separate. Source-backed offline review passes
+0/6 full answer rubrics; groundedness is 39/46 claims, citation accuracy 21/35 references,
+tool selection 4/6, workflow completion 1/6 and observable action safety 6/6.
+Clarification accuracy is N/A; only three new latency samples qualify, so p50/p95 remain
+unavailable. The 20/20 target and representative successful answers remain incomplete.
 
-The [completion report](evaluation/completion-report.md) records exact denominators,
-tool/workflow/safety metrics, preserved traces and remaining gaps. Policy/RAG/MCP/Groq
-integration is demonstrated, but both complete employee workflows and representative
-evaluation are not verified. **No further live evaluation or EVAL-003 retry is authorized.**
-The [bounded execution contract](evaluation/completion-plan.md) is historical, not permission
-for another run.
-
-The owner approved a [single coverage-first thirteen-case run](evaluation/coverage-first-plan.md)
-after protected-main CI and merge. Its opt-in controls do not permit case retries, a second
-run or overwriting any result above. Results remain pending at this publication checkpoint.
+The [coverage report](evaluation/coverage-report.md) records category outcomes, exact
+denominators and preserved evidence. Both complete employee demo workflows remain
+unverified. The [approved execution contract](evaluation/coverage-first-plan.md) is now
+consumed: **no additional run, case retry or EVAL-003 diagnostic is authorized**.
+Earlier [completion results](evaluation/completion-report.md) remain unchanged.
 
 Delivery documents:
 [deployment and health equivalent](docs/deployed.md),
 [design and evaluation](docs/design-and-evaluation.md),
 [AI-tooling disclosure](docs/ai-tooling.md),
-[latest evaluation report](evaluation/completion-report.md),
+[latest evaluation report](evaluation/coverage-report.md),
 [historical closure report](evaluation/final-report.md),
 [demo/submission checklist](docs/demo-checklist.md),
 and [requirements traceability](docs/requirements/traceability.md).

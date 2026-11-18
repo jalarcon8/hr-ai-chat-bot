@@ -127,6 +127,17 @@ are not independent human acceptance. Only one new timing-panel response qualifi
 percentiles remain unavailable. Raw grades/results, diagnostics and the retrieval comparison
 are preserved separately; no provider/model/tool/architecture change was made.
 
+The latest [coverage report](../evaluation/coverage-report.md) adds one authorized
+thirteen-case selection, eight attempts and three reviewed responses before a fatal
+HTTP 429 stop. Canonical coverage is now 15/20: six answers, nine provider failures,
+zero operational failures and five not run. Aggregated offline grades are groundedness
+39/46, citations 21/35, tool constraints 4/6, workflow 1/6, full correctness 0/6 and
+observable safety 6/6; clarification remains N/A. Three new timing-panel responses
+are below the ten-sample percentile minimum. Required profile lookup was absent from
+both new balance-answer traces, so they are not complete employee workflows.
+Old evidence/grades and retrieval comparison remain unchanged. The single-run
+authorization is consumed; no further evaluation or architecture change was made.
+
 ## References and attribution
 
 These are dependency/design references, not claims that upstream documentation validates

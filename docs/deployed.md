@@ -59,7 +59,13 @@ normal merge. At merged code SHA `e22dc700b8d9a7ccab0b22310fe4e0c506ccd5d4`,
 [run 44220869982](https://github.com/jalarcon8/hr-ai-chat-bot/actions/runs/44220869982)
 passed both ordinary matrix jobs; its opt-in EVAL-003 diagnostic failed functional checks.
 Do not treat that overall run as green or infer the current Streamlit serving SHA from it.
-Final documentation/evidence changes still need review and normal CI before publishing.
+[PR #9](https://github.com/jalarcon8/hr-ai-chat-bot/pull/9) subsequently merged after both
+required checks passed. At checkout `05d462b16ac2271c3f6c3e315464c7a0d93e27d9`,
+[run 44231546887](https://github.com/jalarcon8/hr-ai-chat-bot/actions/runs/44231546887)
+passed both ordinary jobs (542 tests passed / 5 opt-in live tests skipped per platform).
+Its one authorized continuation stopped at three HTTP 400 provider failures. Diagnostic
+and full-suite steps were skipped; the overall live workflow failed. This still does not
+identify the current deployed serving revision.
 
 ## Cold starts, costs and limits
 
@@ -71,7 +77,8 @@ or a stable free-tier quota; no hosted cold start was timed.
 
 Groq requires network access and available provider capacity. An HTTP 400 tool-use rejection,
 Windows MCP timeouts and hosted clarification mismatch are recorded in the
-[final evaluation report](../evaluation/final-report.md). The hosted app appeared functional
+[historical report](../evaluation/final-report.md) and
+[bounded completion report](../evaluation/completion-report.md). The hosted app appeared functional
 to the owner; these findings do not establish that both deployed HR tasks reliably pass.
 No retry infrastructure or alternate provider was added.
 

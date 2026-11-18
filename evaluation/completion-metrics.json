@@ -1,0 +1,70 @@
+{
+  "primary_definition": "Canonical original Ubuntu suite EVAL-001/002/003 plus the single Ubuntu continuation; Windows attempts and diagnostics remain separately reported, with no diagnostic substitution, duplicate case pooling or inferred answers.",
+  "planned_cases": 20,
+  "attempted_case_ids": ["EVAL-001", "EVAL-002", "EVAL-003", "EVAL-004", "EVAL-005", "EVAL-009", "EVAL-013"],
+  "attempted": 7,
+  "operationally_completed": 3,
+  "provider_failures": 4,
+  "operational_failures": 0,
+  "unattempted": 13,
+  "interrupted": 0,
+  "graded_completed_answers": 3,
+  "correct_completed_answers": 0,
+  "incorrect_completed_answers": 3,
+  "ungraded_completed_answers": 0,
+  "category_coverage": {
+    "policy": {"planned": 4, "attempted": 4, "completed_and_graded": 2},
+    "multi_document": {"planned": 4, "attempted": 1, "completed_and_graded": 1},
+    "tool_requiring": {"planned": 4, "attempted": 1, "completed_and_graded": 0},
+    "ambiguous": {"planned": 4, "attempted": 1, "completed_and_graded": 0},
+    "out_of_scope": {"planned": 4, "attempted": 0, "completed_and_graded": 0}
+  },
+  "scored_primary_metrics": {
+    "case_correctness": {"passed": 0, "scored": 3, "planned": 20},
+    "groundedness": {"supported_claims": 14, "reviewed_claims": 18, "answer_coverage": 3},
+    "citation_accuracy": {"supporting_section_references": 10, "reviewed_section_references": 20, "answer_coverage": 3},
+    "tool_selection": {"passed": 3, "scored": 3, "planned": 20},
+    "workflow_completion": {"passed": 1, "scored": 3, "planned": 20},
+    "clarification_escalation": {"passed": 0, "scored": 0, "rate": null, "reason": "No completed primary ambiguous/out-of-scope/actual clarification or escalation response."},
+    "action_safety": {"passed": 3, "scored": 3, "planned": 20}
+  },
+  "continuation_only": {
+    "workflow_run_id": 44231546887,
+    "run_id": "20261118T034216Z-937f419d",
+    "selected": 17,
+    "attempted": 4,
+    "completed": 1,
+    "provider_failures": 3,
+    "operational_failures": 0,
+    "not_run": 13,
+    "stop_reason": "failure_limit",
+    "latency": {
+      "definition": "Non-error completed responses in the predeclared 17-case continuation panel; no historical pooling.",
+      "qualifying_samples": 1,
+      "minimum_for_percentiles": 10,
+      "completed_duration_ms": {"EVAL-005": 9779.27},
+      "provider_failure_duration_ms": {"EVAL-004": 1270.22, "EVAL-009": 7938.71, "EVAL-013": 3493.42},
+      "p50_ms": null,
+      "p95_ms": null
+    }
+  },
+  "historical_primary_latency_not_pooled": {
+    "EVAL-001": {"duration_ms": 5431.65, "condition": "first_request"},
+    "EVAL-002": {"duration_ms": 1567.44, "condition": "warm"}
+  },
+  "retrieval_comparison_unchanged": {
+    "evidence": "retrieval_comparison.json",
+    "expected_source_labels": 24,
+    "cases": 15,
+    "matched_at_3": 16,
+    "matched_at_5": 17
+  },
+  "grading_inputs": ["offline-scores.json", "completion-scores.json"],
+  "limitations": [
+    "Offline source-backed assistant grades, not independent human acceptance.",
+    "Returned-answer metric denominators exclude unavailable failed answers; coverage and failures are separately reported, not counted as passes.",
+    "No tool-requiring, ambiguous or out-of-scope primary answer completed; representative quality evaluation remains incomplete.",
+    "No latency percentiles: only one qualifying new sample, not the required ten.",
+    "Checkout SHA is recorded separately; runner retained its +dirty suffix and dirty-path provenance was not captured."
+  ]
+}

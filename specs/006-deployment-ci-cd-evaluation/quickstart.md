@@ -4,14 +4,14 @@ This runbook retains reproducible F006 procedures. The owner confirmed free Comm
 hosting and reported successful deployed prompts. **At the Milestone 4 checkpoint, further
 live evaluation and EVAL-003 debugging are paused.** Live instructions below are historical
 reference, not authorization to run them. All example data and requests are synthetic.
-Use the [final report](../../evaluation/final-report.md) for consolidated results and gaps,
+Use the [completion report](../../evaluation/completion-report.md) for current results and gaps,
 and the [demo checklist](../../docs/demo-checklist.md) for remaining manual delivery actions.
 
-The owner subsequently authorized exactly one bounded EVAL-004-020 continuation.
-Its [separate contract](../../evaluation/completion-plan.md) supersedes the pause only for
-that run, after protected-main CI/merge. It skips both diagnostic and full-suite steps;
-set `continue_remaining=true`, `run_live_evaluation=true`, `diagnostic_only=false`.
-No model, prompt, tool or application change is included.
+The subsequently authorized bounded EVAL-004-020 continuation has now finished and stopped
+at three provider failures: four attempted, one response, thirteen unattempted. Its
+[contract](../../evaluation/completion-plan.md) is historical, not permission to rerun.
+Both diagnostic/full-suite steps were skipped. No further live request is authorized;
+no model, prompt, tool or application change was made.
 
 ## 1. Local readiness
 

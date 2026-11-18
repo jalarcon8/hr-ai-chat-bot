@@ -1,0 +1,148 @@
+{
+    "run":  {
+                "url":  "https://github.com/jalarcon8/hr-ai-chat-bot/actions/runs/44231546887",
+                "id":  44231546887,
+                "conclusion":  "failure",
+                "artifact_id":  14395442772,
+                "verified_zip_sha256":  "f269905c7bd3df2564b45d2961dacc23001bb538371c61d262b76d3b5956c57c"
+            },
+    "checkout_sha":  "05d462b16ac2271c3f6c3e315464c7a0d93e27d9",
+    "runner_dirty_revision":  "05d462b16ac2271c3f6c3e315464c7a0d93e27d9+dirty",
+    "matrix_checks":  {
+                          "test (windows-latest)":  "success",
+                          "test (ubuntu-latest)":  "success",
+                          "diagnostic":  "skipped",
+                          "fullsuite":  "skipped"
+                      },
+    "live_continuation":  {
+                              "started_at":  "2026-11-18T03:42:15Z",
+                              "ended_at":  "2026-11-18T03:42:42Z"
+                          },
+    "evidence":  {
+                     "directory":  "evaluation/evidence/ubuntu-44231546887",
+                     "files":  [
+                                   {
+                                       "filename":  "agent-traces.jsonl",
+                                       "byte_count":  5494,
+                                       "sha256":  "e1bfc24265024d8008a614ff587d1b72e5be186a43166e92d918548d772568f5"
+                                   },
+                                   {
+                                       "filename":  "checked-out-sha.txt",
+                                       "byte_count":  41,
+                                       "sha256":  "3400784d1e2b75fafe4760375277e21831a6c60d084dfec55af742932c0d4f44"
+                                   },
+                                   {
+                                       "filename":  "continuation.log",
+                                       "byte_count":  2598,
+                                       "sha256":  "e5bea942c4f82cab653da3a31fcbbdbda311dbb5e47451a7f4c7dd30ef138f60"
+                                   },
+                                   {
+                                       "filename":  "continuation-attempts.jsonl",
+                                       "byte_count":  748,
+                                       "sha256":  "c05159c861398b3b62d1d417ee42aae6bb67614971e6fedb31d2ac8f46d253a7"
+                                   },
+                                   {
+                                       "filename":  "continuation-manifest.json",
+                                       "byte_count":  996,
+                                       "sha256":  "c72db36b4e638da332c63f2d97f73e317dc1a8d37c7d081844a36a9bd5ea2007"
+                                   },
+                                   {
+                                       "filename":  "continuation-results.jsonl",
+                                       "byte_count":  4964,
+                                       "sha256":  "ef7c0243dc18dbe9c7f7558814bf74f0e15cb966c2fe256042c47043cbcacdb7"
+                                   },
+                                   {
+                                       "filename":  "continuation-summary.json",
+                                       "byte_count":  1372,
+                                       "sha256":  "c378a1d5606c20013e79fc0f6040a691e1a45ee0d1b961dd7dc0ef0f184063e2"
+                                   },
+                                   {
+                                       "filename":  "github-sha.txt",
+                                       "byte_count":  41,
+                                       "sha256":  "3400784d1e2b75fafe4760375277e21831a6c60d084dfec55af742932c0d4f44"
+                                   },
+                                   {
+                                       "filename":  "mcp-traces.jsonl",
+                                       "byte_count":  2759,
+                                       "sha256":  "60be6b194e3f51d902ed7db9358752e567fdbf882d62c9cb5c086c0173de236d"
+                                   }
+                               ],
+                     "total_files":  9,
+                     "total_bytes":  19013
+                 },
+    "validation":  {
+                       "checked_out_sha_matches_expected":  true,
+                       "github_sha_matches_expected":  true,
+                       "journal_events":  8,
+                       "result_rows":  4,
+                       "journal_each_once":  true,
+                       "last_stop_reason":  "failure_limit",
+                       "provider_http_400_tool_use_failed":  3,
+                       "completed":  1,
+                       "operational_failures":  0,
+                       "summary_selected":  17,
+                       "attempted":  4,
+                       "selected_list_includes_unattempted_cases":  true,
+                       "source_destination_bytes_identical":  true,
+                       "old_baseline_result_trace_archive_report_hashes_unchanged":  true,
+                       "source_cache_changes":  "expected as previously verified",
+                       "excluded":  [
+                                        "signedURLs",
+                                        "credentials",
+                                        "full author/account metadata"
+                                    ],
+                       "no_zip_in_repo":  true,
+                       "no_code_or_app_changes":  true
+                   },
+    "case_summary":  {
+                         "selected_count":  17,
+                         "selected_order":  [
+                                                "EVAL-004",
+                                                "EVAL-005",
+                                                "EVAL-009",
+                                                "EVAL-013",
+                                                "EVAL-017",
+                                                "EVAL-006",
+                                                "EVAL-010",
+                                                "EVAL-014",
+                                                "EVAL-018",
+                                                "EVAL-007",
+                                                "EVAL-011",
+                                                "EVAL-015",
+                                                "EVAL-019",
+                                                "EVAL-008",
+                                                "EVAL-012",
+                                                "EVAL-016",
+                                                "EVAL-020"
+                                            ],
+                         "attempted_count":  4,
+                         "attempted_order":  [
+                                                 "EVAL-004",
+                                                 "EVAL-005",
+                                                 "EVAL-009",
+                                                 "EVAL-013"
+                                             ],
+                         "missing_count":  13,
+                         "missing_ids_in_order":  [
+                                                      "EVAL-017",
+                                                      "EVAL-006",
+                                                      "EVAL-010",
+                                                      "EVAL-014",
+                                                      "EVAL-018",
+                                                      "EVAL-007",
+                                                      "EVAL-011",
+                                                      "EVAL-015",
+                                                      "EVAL-019",
+                                                      "EVAL-008",
+                                                      "EVAL-012",
+                                                      "EVAL-016",
+                                                      "EVAL-020"
+                                                  ],
+                         "outcomes":  {
+                                          "provider_failure":  3,
+                                          "completed":  1
+                                      },
+                         "operational_failures":  0,
+                         "stop_reason":  "failure_limit"
+                     }
+}

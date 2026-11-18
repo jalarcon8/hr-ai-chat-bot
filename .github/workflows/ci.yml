@@ -27,6 +27,11 @@ on:
         required: true
         type: boolean
         default: false
+      coverage_unattempted:
+        description: Run only the thirteen untouched cases once after explicit approval
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -82,7 +87,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.run_live_evaluation == true && github.ref == 'refs/heads/main' }}
     needs: test
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: ${{ inputs.coverage_unattempted && 15 || 45 }}
 
     steps:
       - name: Checkout repository
@@ -112,15 +117,21 @@ jobs:
         env:
           F006_CONTINUE_REMAINING: ${{ inputs.continue_remaining }}
           F006_DIAGNOSTIC_ONLY: ${{ inputs.diagnostic_only }}
+          F006_COVERAGE_UNATTEMPTED: ${{ inputs.coverage_unattempted }}
         run: |
           python evaluation/run_evaluation.py --validate-only
           if [ "$F006_CONTINUE_REMAINING" = "true" ]; then
             test "$F006_DIAGNOSTIC_ONLY" = "false"
+            test "$F006_COVERAGE_UNATTEMPTED" = "false"
+          fi
+          if [ "$F006_COVERAGE_UNATTEMPTED" = "true" ]; then
+            test "$F006_DIAGNOSTIC_ONLY" = "false"
+            test "$F006_CONTINUE_REMAINING" = "false"
           fi
 
       - name: Run one MCP-backed diagnostic case
         id: mcp_diagnostic
-        if: ${{ !inputs.continue_remaining }}
+        if: ${{ !inputs.continue_remaining && !inputs.coverage_unattempted }}
         env:
           F006_DIAGNOSTIC_CASE: ${{ inputs.diagnostic_case }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -133,7 +144,7 @@ jobs:
             | tee "$RUNNER_TEMP/f006-evaluation/diagnostic.log"
 
       - name: Run bounded 20-case evaluation
-        if: ${{ success() && !inputs.continue_remaining && steps.mcp_diagnostic.outcome == 'success' && !inputs.diagnostic_only }}
+        if: ${{ success() && !inputs.continue_remaining && !inputs.coverage_unattempted && steps.mcp_diagnostic.outcome == 'success' && !inputs.diagnostic_only }}
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           AGENT_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/agent-traces.jsonl
@@ -144,7 +155,7 @@ jobs:
             | tee "$RUNNER_TEMP/f006-evaluation/evaluation.log"
 
       - name: Run bounded EVAL-004-020 continuation
-        if: ${{ success() && inputs.continue_remaining && !inputs.diagnostic_only }}
+        if: ${{ success() && inputs.continue_remaining && !inputs.coverage_unattempted && !inputs.diagnostic_only }}
         timeout-minutes: 15
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -156,11 +167,24 @@ jobs:
             --output-dir "$RUNNER_TEMP/f006-evaluation" 2>&1 \
             | tee "$RUNNER_TEMP/f006-evaluation/continuation.log"
 
+      - name: Run coverage-first thirteen-case evaluation
+        if: ${{ success() && inputs.coverage_unattempted && !inputs.continue_remaining && !inputs.diagnostic_only }}
+        timeout-minutes: 10
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          AGENT_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/coverage-${{ github.run_id }}-${{ github.run_attempt }}/agent-traces.jsonl
+          HR_MCP_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/coverage-${{ github.run_id }}-${{ github.run_attempt }}/mcp-traces.jsonl
+        run: |
+          set -o pipefail
+          python evaluation/run_evaluation.py --cover-unattempted \
+            --output-dir "$RUNNER_TEMP/f006-evaluation/coverage-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" 2>&1 \
+            | tee "$RUNNER_TEMP/f006-evaluation/coverage.log"
+
       - name: Upload F006 evaluation artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: f006-evaluation-${{ github.sha }}
+          name: ${{ inputs.coverage_unattempted && format('f006-coverage-{0}-{1}-{2}', github.run_id, github.run_attempt, github.sha) || format('f006-evaluation-{0}', github.sha) }}
           path: ${{ runner.temp }}/f006-evaluation/
           if-no-files-found: warn
           retention-days: 14

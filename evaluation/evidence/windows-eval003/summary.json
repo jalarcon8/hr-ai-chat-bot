@@ -1,0 +1,36 @@
+{
+  "case_id": "EVAL-003",
+  "outcome": "operational_failure",
+  "response_status": "error",
+  "duration_ms": 302588.55,
+  "tool_names": [
+    "search_policy_documents"
+  ],
+  "tool_outcomes": [
+    {
+      "tool_name": "search_policy_documents",
+      "status": "timeout",
+      "error_code": "timeout"
+    }
+  ],
+  "source_ids": [],
+  "failure_code": "mcp_tool_call_failed",
+  "model_id": "openai/gpt-oss-20b",
+  "finished_at": "2026-11-18T01:33:29.199276+00:00",
+  "diagnostic_attempts": 1,
+  "environment": "Local Windows, Python 3.11.9; original failure occurred on Ubuntu GitHub Actions",
+  "provider_diagnostic": {
+    "failure_recorded": false,
+    "http_status": null,
+    "error_category": null,
+    "allowlisted_error_code": null
+  },
+  "mcp_activity": {
+    "discovery": "success",
+    "discovered_tool_count": 6,
+    "tool_execution_duration_ms": 300014.07,
+    "tool_retry": "automatic_retry_suppressed"
+  },
+  "interpretation": "Groq produced a usable policy-search tool call; HTTP 400 tool_use_failed was not reproduced in this attempt. The case did not complete because local MCP policy search timed out. This does not establish that the hosted provider failure is resolved.",
+  "preservation": "Original repository evaluation results, report, retrieval comparison, and prior hosted results hashes verified unchanged; repository worktree remained clean."
+}

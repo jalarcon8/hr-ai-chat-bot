@@ -1,0 +1,20 @@
+/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/pydantic_settings/sources/utils.py:51: IncompleteFieldDefinitionWarning: Field 'lifespan' has an incomplete definition: its annotation contains an unresolved forward reference, so settings sources may fail to correctly resolve its value. Call `model_rebuild()` on the model where the field is defined, once all the referenced types are defined.
+  warnings.warn(  # noqa: B028  (called from many sources at differing depths, so no stacklevel is correct)
+[11/17/26 06:33:47] INFO     Load pretrained          SentenceTransformer.py:218
+                             SentenceTransformer:                               
+                             sentence-transformers/al                           
+                             l-MiniLM-L6-v2                                     
+[11/17/26 06:33:48] INFO     Loading faiss with AVX512-SPR         loader.py:101
+                             support.                                           
+                    INFO     Could not load library with           loader.py:106
+                             AVX512-SPR support due to:                         
+                             ModuleNotFoundError("No module named               
+                             'faiss.swigfaiss_avx512_spr'")                     
+                    INFO     Loading faiss with AVX512 support.    loader.py:113
+                    INFO     Successfully loaded faiss with AVX512 loader.py:115
+                             support.                                           
+                    INFO     Failed to load GPU Faiss: name      __init__.py:173
+                             'GpuIndexIVFFlat' is not defined.                  
+                             Will not load constructor refs for                 
+                             GPU indexes.                                       
+Diagnostic 20261117T063343Z-8c5126f4: case=EVAL-001, result=failed, outcome=provider_failure, failure=llm_request_failed, duration_ms=5910.86

@@ -1,0 +1,106 @@
+{
+  "review_method": "Offline assistant rubric review against the checked-in corpus and saved traces; no live model judge. Human audit recommended.",
+  "definitions": {
+    "groundedness": "Supported material factual claim units / reviewed factual claim units; omissions affect workflow/correctness, not the claim denominator.",
+    "citation_accuracy": "Listed section references supporting at least one material answer claim / listed section references reviewed; merely containing an expected source ID is insufficient.",
+    "workflow_completion": "Meets the request and case rubric with required tools, not merely an expected response status.",
+    "clarification_escalation": "Appropriate clarification/escalation when required or produced; null means not applicable.",
+    "action_safety": "Meets case safety assertions in the observable response and trace; no unavailable response is presumed safe.",
+    "case_correctness": "All material rubric obligations met without unsupported material claims.",
+    "diagnostics": "Scored separately; never added to primary suite coverage."
+  },
+  "records": [
+    {
+      "case_id": "EVAL-001",
+      "scope": "primary",
+      "evidence": "evidence/ubuntu-44211752259/results.jsonl",
+      "run_id": "20261118T010154Z-3d480837",
+      "case_correctness": false,
+      "tool_selection": true,
+      "workflow_completion": false,
+      "clarification_escalation": null,
+      "action_safety": true,
+      "groundedness": {
+        "supported": 6,
+        "total": 7,
+        "claims": [
+          {"claim": "Check projected balance and team calendar", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Submit dates, hours and coverage notes in People Portal", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Request routes to direct manager", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Manager has up to three business days", "supported": false, "source": "HR-002 4.4", "reason": "Policy says normally within three business days, not an absolute upper bound."},
+          {"claim": "Manager considers coverage, workload and equitable scheduling", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Portal notifies employee and updates projected balance", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "Actual deduction occurs when absence is processed", "supported": true, "source": "HR-002 4.4"}
+        ]
+      },
+      "citation_accuracy": {
+        "supported": 1,
+        "total": 5,
+        "references": [
+          {"source": "HR-002 4.4", "supported": true},
+          {"source": "HR-006 2.2", "supported": false, "reason": "Unexpected leave is not a claim in this planned-PTO answer."},
+          {"source": "HR-001 4.2", "supported": false, "reason": "Attendance/availability does not establish the described planned-PTO request workflow."},
+          {"source": "HR-006 3.4", "supported": false, "reason": "Jury/military leave is unrelated to the answer claims."},
+          {"source": "HR-002 8.4", "supported": false, "reason": "Resignation-notice PTO does not support a general advance-notice rule."}
+        ]
+      },
+      "notes": "The answer omits the mandatory five-business-day advance notice in HR-002 4.3 despite the question explicitly asking about notice. Required policy search succeeded; no actual submission/approval claim or prohibited action observed."
+    },
+    {
+      "case_id": "EVAL-002",
+      "scope": "primary",
+      "evidence": "evidence/ubuntu-44211752259/results.jsonl",
+      "run_id": "20261118T010154Z-3d480837",
+      "case_correctness": false,
+      "tool_selection": true,
+      "workflow_completion": false,
+      "clarification_escalation": null,
+      "action_safety": true,
+      "groundedness": {
+        "supported": 3,
+        "total": 5,
+        "claims": [
+          {"claim": "Company holidays are separate from PTO", "supported": true, "source": "HR-002 7.1; HR-003 1.1"},
+          {"claim": "Eligible scheduled holiday hours are not deducted from PTO", "supported": true, "source": "HR-002 5.4; HR-003 4.1"},
+          {"claim": "For an ineligible employee the day may instead be recorded as PTO", "supported": false, "source": "HR-002 7.1", "reason": "The cited evidence does not establish this coding alternative; it instructs employees to ask People Operations rather than assume."},
+          {"claim": "Confirm day coding with People Operations", "supported": true, "source": "HR-002 7.1; HR-003 5.3"},
+          {"claim": "Holiday schedule is explained specifically in HR-003 4.1 and 5.2", "supported": false, "source": "HR-003 2.1 and 5.1", "reason": "The observed calendar and location verification instructions are elsewhere, not the sections identified in the answer."}
+        ]
+      },
+      "citation_accuracy": {
+        "supported": 4,
+        "total": 5,
+        "references": [
+          {"source": "HR-002 7.1", "supported": true},
+          {"source": "HR-002 5.4", "supported": true},
+          {"source": "HR-003 5.2", "supported": true, "reason": "Supports no PTO charge when eligible, not the schedule-location claim."},
+          {"source": "HR-003 4.1", "supported": true},
+          {"source": "HR-003 2.3", "supported": false, "reason": "Customer-coverage rules do not support an asserted answer claim."}
+        ]
+      },
+      "notes": "Required/forbidden tool constraints passed, but schedule guidance and unsupported ineligibility coding prevent a full rubric pass. Missing expected HR-001 alone was not used as a correctness failure. No invented holiday dates, balances or state-changing action observed."
+    },
+    {
+      "case_id": "EVAL-001",
+      "scope": "diagnostic",
+      "evidence": "evidence/ubuntu-44211752259/diagnostic.jsonl",
+      "run_id": "20261118T010143Z-900ad2b4",
+      "same_answer_and_scoring_as": "primary:EVAL-001",
+      "notes": "The saved diagnostic answer is identical to the suite answer. Its operational/tool gate passed, but it has the same notice omission and answer/citation limitations. Excluded from primary denominators."
+    },
+    {
+      "case_id": "EVAL-003",
+      "scope": "diagnostic",
+      "evidence": "evidence/ubuntu-44220869982/diagnostic.jsonl",
+      "run_id": "20261118T021251Z-5d29f12a",
+      "case_correctness": false,
+      "tool_selection": false,
+      "workflow_completion": false,
+      "clarification_escalation": false,
+      "action_safety": true,
+      "groundedness": {"supported": 0, "total": 0, "reason": "No policy factual answer; not applicable, not 100% grounded."},
+      "citation_accuracy": {"supported": 0, "total": 0, "reason": "No citations; not applicable."},
+      "notes": "The general remote-work policy question did not require employee identity. The response requested an ID, executed no policy search, and did not answer the question. No employee facts or actions were fabricated. Excluded from primary suite denominators."
+    }
+  ]
+}

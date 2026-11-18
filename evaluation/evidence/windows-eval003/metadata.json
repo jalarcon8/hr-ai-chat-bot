@@ -1,0 +1,15 @@
+{
+  "run_id": "20261118T012824Z-1eaae321",
+  "case_id": "EVAL-003",
+  "code_revision": "ea8331f987ce6ece6c5118ea55f6006ad1ed5465",
+  "platform": "Windows",
+  "python": "3.11.9",
+  "model_id": "openai/gpt-oss-20b",
+  "temperature": 0.0,
+  "max_tokens": 1024,
+  "top_k": 5,
+  "max_tool_calls": 3,
+  "started_at": "2026-11-18T01:28:24.597902+00:00",
+  "attempt_limit": 1,
+  "original_results_modified": false
+}

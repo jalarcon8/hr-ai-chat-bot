@@ -14,25 +14,27 @@ The project prioritizes a lightweight, modular architecture that satisfies the a
 - Repository: <https://github.com/jalarcon8/hr-ai-chat-bot>
 - Recorded demonstration: **pending; no demo link supplied**.
 
-The owner reports successful deployed prompts. The bounded Ubuntu suite completed two
-answers, failed EVAL-003, and left 17 cases unattempted. Subsequent offline review found
-neither completed answer fully satisfied its rubric; original ungraded fields are preserved.
-A separate diagnostic
-demonstrated policy search through MCP and a final Groq response; it does not verify both
-employee workflows. Representative quality coverage and 10-20-sample latency percentiles remain
-incomplete. **Further live evaluation/debugging is paused by owner decision.**
+The owner reports successful deployed prompts. The single authorized Ubuntu continuation
+has finished, stopping at its three-provider-failure limit without case retries. Across the
+canonical Ubuntu primary results: **7/20 attempted, 3 answers returned and graded,
+4 provider failures, 0 operational failures, 13 unattempted**. Diagnostics and Windows
+timeouts remain separate. Offline source-backed review passes 0/3 full answer rubrics;
+groundedness is 14/18 claims and citation accuracy 10/20 section references.
+Only one new latency sample qualified, so required p50/p95 remain unavailable.
 
-**Subsequent bounded authorization:** the owner approved one Ubuntu-only EVAL-004-020
-continuation after protected-main merge, with no case retries, a 15-minute live-step limit,
-fatal-provider stops and at most three provider/operational failures. See the
-[completion contract and offline scoring](evaluation/completion-plan.md).
-This exception does not authorize EVAL-003 retries, another diagnostic or a full-suite rerun.
+The [completion report](evaluation/completion-report.md) records exact denominators,
+tool/workflow/safety metrics, preserved traces and remaining gaps. Policy/RAG/MCP/Groq
+integration is demonstrated, but both complete employee workflows and representative
+evaluation are not verified. **No further live evaluation or EVAL-003 retry is authorized.**
+The [bounded execution contract](evaluation/completion-plan.md) is historical, not permission
+for another run.
 
 Delivery documents:
 [deployment and health equivalent](docs/deployed.md),
 [design and evaluation](docs/design-and-evaluation.md),
 [AI-tooling disclosure](docs/ai-tooling.md),
-[consolidated evaluation report](evaluation/final-report.md),
+[latest evaluation report](evaluation/completion-report.md),
+[historical closure report](evaluation/final-report.md),
 [demo/submission checklist](docs/demo-checklist.md),
 and [requirements traceability](docs/requirements/traceability.md).
 

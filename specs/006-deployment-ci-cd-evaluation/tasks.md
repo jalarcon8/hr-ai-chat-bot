@@ -44,7 +44,7 @@ provider-free retrieval comparison.
 
 - [X] T010 Create 20 unique synthetic cases with rubrics, expected evidence/tool/safety outcomes, coverage of all five required categories, and a fixed 10-case latency subset (QR-006, QR-040). **Evidence:** `evaluation/cases.json` validates as 20 cases, four per category, with 10 selected latency cases; all employee-specific scenarios use `SYN-001` or `SYN-003`.
 - [X] T011 Implement `evaluation/run_evaluation.py` using the existing agent, Groq adapter, and stdio MCP client. It supports a one-case `--diagnostic` gate and the bounded `--live` run, writes to an optional isolated output directory, runs sequentially with no retries, measures `AgentSession.process_request`, appends privacy-safe rows immediately, and separates failure classes (QR-041–QR-043, QR-054). **Evidence:** prior live attempt preserved; diagnostic and full-suite runner paths are covered by deterministic tests. Incomplete runs return a failing process status.
-- [X] T012 Add deterministic tests for case validation/category coverage, fixed latency selection, nearest-rank percentiles, retrieval aggregation, failure classification, diagnostic gating, and isolated output/partial-result preservation; tests make no Groq calls (QR-006, QR-040–QR-043). **Evidence:** `tests/unit/test_f006_evaluation.py`: 24 passed after the case-selector update; Ruff passed. Default EVAL-001, isolated EVAL-003, invalid selections and CLI mode separation are covered.
+- [X] T012 Add deterministic tests for case validation/category coverage, fixed latency selection, nearest-rank percentiles, retrieval aggregation, failure classification, diagnostic gating, and isolated output/partial-result preservation; tests make no Groq calls (QR-006, QR-040–QR-043). **Evidence:** 39 focused evaluation tests passed; repository-wide Ruff passed. Existing defaults, continuation selection, stale-trace isolation, fatal/three-failure stops, no repeated cases, interrupted-attempt journaling and the ten-sample percentile threshold are covered.
 - [X] T013 Run local F001 retrieval comparison for expected-source cases at k=3 and k=5 and report measured recall without extra Groq calls (QR-044, QR-054). **Evidence:** 15 applicable cases / 24 expected source labels; k=3 retrieved 16/24 (66.7%), k=5 retrieved 17/24 (70.8%).
 - [~] T014 **[MANUAL: USER]** Use the existing Groq credential and explicit authorization for a bounded suite run; score answer correctness, groundedness, citations, escalation, and action safety from retained outputs where available (QR-041–QR-043, QR-054, QR-057). **Final evidence:** the original Windows suite stopped at EVAL-001 after a 302.20-second MCP timeout. Later Ubuntu run 44211752259 passed a separate EVAL-001 diagnostic (8742.00 ms), then attempted 3/20 suite cases: two completed ungraded answers, one provider failure, seventeen unattempted. EVAL-003 failed before MCP with HTTP 400 / `bad_request` / `tool_use_failed`. Only 2/10 designated latency cases completed; required percentiles and answer-level grades remain unavailable. A separate Windows EVAL-003 attempt selected policy search but timed out (302588.55 ms). Hosted isolated EVAL-003 run 44220869982 returned `clarification_needed` in 1787.45 ms with no tool call: `outcome=completed`, but diagnostic tool/workflow checks failed. The owner paused further live requests/debugging and authorized Milestone 4 documentation with these gaps. See the [final report](../../evaluation/final-report.md) and byte-preserved [evidence manifest](../../evaluation/evidence/manifest.json); no diagnostic is pooled into suite coverage.
 
@@ -85,8 +85,24 @@ after protected-main review and CI. Existing completed answers are graded separa
 [offline-scores.json](../../evaluation/offline-scores.json), with source-backed claim/citation
 decisions and diagnostic exclusion. This does not rewrite original null grade fields.
 No EVAL-003 retry, repeated preflight diagnostic, model/prompt/tool change or automatic
-second run is authorized. The continuation result and final metric coverage remain pending
-until the single authorized run and subsequent offline review are complete.
+second run is authorized.
+
+**Executed checkpoint:** [PR #9](https://github.com/jalarcon8/hr-ai-chat-bot/pull/9)
+merged after required CI. [Run 44231546887](https://github.com/jalarcon8/hr-ai-chat-bot/actions/runs/44231546887)
+attempted 004/005/009/013 exactly once; 005 returned an answer, the other three failed
+HTTP 400 / `bad_request` / `tool_use_failed`, and the failure limit stopped the run.
+Zero operational failures, thirteen unattempted, no interrupted cases, no retries.
+Both ordinary jobs recorded 542 passed / 5 opt-in live tests skipped; the live workflow
+failed and diagnostic/full-suite steps were skipped.
+
+[Final completion metrics](../../evaluation/completion-report.md): three canonical primary
+answers reviewed, groundedness 14/18 claims, citations 10/20 references, tool selection 3/3,
+workflow 1/3, correctness 0/3, safety 3/3, clarification N/A (0 scored).
+Only one new latency sample qualified; p50/p95 remain unavailable. T014 remains partial;
+the historical ungraded fields above are not overwritten. New scores and nine checksummed
+artifact files are separate. T015's ordinary hosted checks are verified at the new checkout,
+but local live acceptance remains blocked; T018 remains manual. Stop for owner review:
+no additional live run or architecture change is authorized.
 
 ## Requirement-to-task coverage
 

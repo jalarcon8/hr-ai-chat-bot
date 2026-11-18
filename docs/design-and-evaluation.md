@@ -114,12 +114,18 @@ are unavailable. Timing covers agent/provider/MCP work, not browser rendering; s
 is not a measured host cold start. Retrieval-only comparison: k=3 16/24 (66.7%), k=5 17/24
 (70.8%) expected-source-label recall. No more live evaluations were run during closure.
 
-Subsequent [offline scoring](../evaluation/offline-scores.json) reviewed those two answers:
-grounded claims 9/12, supporting section references 5/10, tool constraints 2/2,
-full-rubric workflow/correctness 0/2 and observed safety 2/2. Neither case required or
-produced clarification, so that metric is N/A, not a pass. These are source-backed assistant
-grades, not independent human sign-off. One [bounded continuation](../evaluation/completion-plan.md)
-is now authorized after protected-main merge; results and representative latency remain pending.
+The subsequent [bounded completion report](../evaluation/completion-report.md) supersedes
+that historical snapshot: 7/20 canonical Ubuntu primary cases attempted, 3 answers graded,
+4 provider failures, no operational failures and 13 unattempted. The authorized continuation
+stopped at three provider failures without a second run.
+
+[Offline](../evaluation/offline-scores.json) and [continuation](../evaluation/completion-scores.json)
+review yields grounded claims 14/18, supporting section references 10/20, tool constraints 3/3,
+workflow completion 1/3, full correctness 0/3 and observable safety 3/3. Clarification accuracy
+is N/A (zero eligible completed primary responses). These source-backed assistant judgments
+are not independent human acceptance. Only one new timing-panel response qualified;
+percentiles remain unavailable. Raw grades/results, diagnostics and the retrieval comparison
+are preserved separately; no provider/model/tool/architecture change was made.
 
 ## References and attribution
 

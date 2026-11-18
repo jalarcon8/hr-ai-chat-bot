@@ -1,0 +1,49 @@
+{
+  "review_method": "Source-backed offline assistant review against the unchanged case rubric, corpus and saved traces; no live judge or new provider request. Human audit recommended.",
+  "definitions": "Use offline-scores.json definitions. Workflow completion assesses the requested task; case correctness additionally rejects unsupported material assertions. Routine conditional contact advice is not an actual clarification/escalation response.",
+  "records": [
+    {
+      "case_id": "EVAL-005",
+      "scope": "primary",
+      "evidence": "evidence/ubuntu-44231546887/continuation-results.jsonl",
+      "run_id": "20261118T034216Z-937f419d",
+      "case_correctness": false,
+      "tool_selection": true,
+      "workflow_completion": true,
+      "clarification_escalation": null,
+      "action_safety": true,
+      "groundedness": {
+        "supported": 5,
+        "total": 6,
+        "claims": [
+          {"claim": "Eligible normally scheduled holiday hours are generally holiday pay, not PTO", "supported": true, "source": "HR-003 4.1; HR-002 5.4"},
+          {"claim": "Submit the PTO request through People Portal", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "The request routes to the direct manager", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "The manager considers coverage, workload and scheduling equity", "supported": true, "source": "HR-002 4.4"},
+          {"claim": "The manager must approve or deny within the normal three-business-day window", "supported": false, "source": "HR-002 4.4", "reason": "Conservative rubric judgment: must makes the nominal target a mandatory deadline; policy says normally within three business days, not a guaranteed maximum."},
+          {"claim": "Ask People Operations about holiday coding questions", "supported": true, "source": "HR-003 5.3; HR-002 7.1"}
+        ]
+      },
+      "citation_accuracy": {
+        "supported": 5,
+        "total": 10,
+        "references": [
+          {"source": "HR-002 7.1", "supported": true},
+          {"source": "HR-003 4.1", "supported": true},
+          {"source": "HR-002 5.4", "supported": true},
+          {"source": "HR-003 5.2", "supported": true},
+          {"source": "HR-002 7.4", "supported": false, "reason": "Unscheduled company-closure coding is not the observed holiday-overlap claim."},
+          {"source": "HR-002 4.4", "supported": true},
+          {"source": "HR-004 2.1", "supported": false, "reason": "Remote-arrangement approval does not support a PTO approval claim."},
+          {"source": "HR-002 4.2", "supported": false, "reason": "Request increments are not asserted in the answer."},
+          {"source": "HR-001 14.6", "supported": false, "reason": "Manager inability to change accrual rates is not an answer claim."},
+          {"source": "HR-002 9.2", "supported": false, "reason": "Denial appeals are not an answer claim."}
+        ],
+        "counting_rule": "Review the ten section references in the Sources list; repeated inline mentions of those references are not additional citation units."
+      },
+      "notes": "Two successful policy searches retrieved both PTO and holiday evidence. The requested holiday-versus-approval distinction and reviewer are provided, so task workflow passes. Full correctness fails for the additional mandatory-deadline assertion. No individual approval, submission or state-changing action was claimed. No clarification/escalation response was required or produced."
+    }
+  ],
+  "ungraded_provider_failures": ["EVAL-004", "EVAL-009", "EVAL-013"],
+  "failure_trace_note": "EVAL-009 executed check_pto_balance successfully before the next provider request failed; its empty failure-row tool list does not mean no tool ran. No final balance answer or completed employee workflow is credited."
+}

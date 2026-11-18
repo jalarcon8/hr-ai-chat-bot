@@ -565,9 +565,13 @@ def _live_config() -> AgentConfig:
     return config
 
 
-def run_live_diagnostic(output_dir: Path | None = None) -> bool:
+def run_live_diagnostic(
+    output_dir: Path | None = None, *, case_id: str = "EVAL-001"
+) -> bool:
     cases = load_cases()
-    case = cases[0]
+    case = next((case for case in cases if case["case_id"] == case_id), None)
+    if case is None:
+        raise ValueError(f"Unknown diagnostic case ID: {case_id}")
     if not case["required_tools"]:
         raise ValueError("The diagnostic evaluation case must require an MCP tool.")
     config = _live_config()
@@ -684,11 +688,17 @@ def main() -> int:
     )
     mode.add_argument("--validate-only", action="store_true", help="validate cases without Groq")
     parser.add_argument(
+        "--diagnostic-case",
+        help="case ID for --diagnostic (default: EVAL-001); does not select full-suite cases",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         help="write run outputs outside the checked-in evaluation evidence",
     )
     args = parser.parse_args()
+    if args.diagnostic_case is not None and not args.diagnostic:
+        parser.error("--diagnostic-case requires --diagnostic")
     cases = load_cases()
     if args.validate_only:
         latency_count = sum(case["latency_sample"] for case in cases)
@@ -698,7 +708,10 @@ def main() -> int:
         )
         return 0
     if args.diagnostic:
-        return 0 if run_live_diagnostic(args.output_dir) else 1
+        return 0 if run_live_diagnostic(
+            args.output_dir,
+            case_id=args.diagnostic_case if args.diagnostic_case is not None else "EVAL-001",
+        ) else 1
     return 0 if run_live_evaluation(args.output_dir) else 1
 
 

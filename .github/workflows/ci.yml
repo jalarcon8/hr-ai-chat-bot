@@ -17,6 +17,11 @@ on:
         required: true
         type: boolean
         default: true
+      diagnostic_case:
+        description: Evaluation case ID for the isolated MCP-backed diagnostic
+        required: true
+        type: string
+        default: EVAL-001
 
 permissions:
   contents: read
@@ -104,12 +109,14 @@ jobs:
       - name: Run one MCP-backed diagnostic case
         id: mcp_diagnostic
         env:
+          F006_DIAGNOSTIC_CASE: ${{ inputs.diagnostic_case }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           AGENT_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/agent-traces.jsonl
           HR_MCP_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/mcp-traces.jsonl
         run: |
           set -o pipefail
-          python evaluation/run_evaluation.py --diagnostic --output-dir "$RUNNER_TEMP/f006-evaluation" 2>&1 \
+          python evaluation/run_evaluation.py --diagnostic --diagnostic-case "$F006_DIAGNOSTIC_CASE" \
+            --output-dir "$RUNNER_TEMP/f006-evaluation" 2>&1 \
             | tee "$RUNNER_TEMP/f006-evaluation/diagnostic.log"
 
       - name: Run bounded 20-case evaluation

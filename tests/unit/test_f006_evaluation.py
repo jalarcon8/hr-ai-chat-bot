@@ -253,12 +253,14 @@ def test_live_runner_refuses_to_repeat_an_existing_bounded_run(tmp_path, monkeyp
         evaluation.run_live_evaluation()
 
 
-def test_live_diagnostic_records_one_successful_mcp_case_without_overwriting_partial_results(
-    tmp_path, monkeypatch
+@pytest.mark.parametrize("case_id", [None, "EVAL-003"])
+def test_live_diagnostic_records_one_selected_mcp_case_without_overwriting_partial_results(
+    tmp_path, monkeypatch, case_id
 ):
-    cases = _valid_cases()
-    cases[0]["required_tools"] = ["search_policy_documents"]
-    cases[0]["forbidden_tools"] = []
+    cases = load_cases()
+    selected_case = next(
+        case for case in cases if case["case_id"] == (case_id or "EVAL-001")
+    )
     monkeypatch.setattr(evaluation, "load_cases", lambda: cases)
     monkeypatch.setattr(
         evaluation, "_live_config", lambda: SimpleNamespace(model_name="test-model")
@@ -271,7 +273,8 @@ def test_live_diagnostic_records_one_successful_mcp_case_without_overwriting_par
 
         def process_request(self, request, context=None):
             self.calls += 1
-            assert request == cases[0]["request"]
+            assert request == selected_case["request"]
+            assert context == selected_case["context"]
             return AgentResponse(
                 answer="The supported policy answer.",
                 status="answered",
@@ -294,14 +297,17 @@ def test_live_diagnostic_records_one_successful_mcp_case_without_overwriting_par
     partial_results = tmp_path / "results.jsonl"
     partial_results.write_text('{"case_id":"EVAL-001","outcome":"operational_failure"}\n')
 
-    assert evaluation.run_live_diagnostic(tmp_path) is True
+    if case_id is None:
+        assert evaluation.run_live_diagnostic(tmp_path) is True
+    else:
+        assert evaluation.run_live_diagnostic(tmp_path, case_id=case_id) is True
     diagnostic_rows = [
         json.loads(line)
         for line in (tmp_path / "diagnostic.jsonl").read_text(encoding="utf-8").splitlines()
     ]
     assert session.calls == 1
     assert session.closed
-    assert [row["case_id"] for row in diagnostic_rows] == [cases[0]["case_id"]]
+    assert [row["case_id"] for row in diagnostic_rows] == [selected_case["case_id"]]
     assert diagnostic_rows[0]["outcome"] == "completed"
     assert partial_results.read_text(encoding="utf-8") == (
         '{"case_id":"EVAL-001","outcome":"operational_failure"}\n'
@@ -309,8 +315,7 @@ def test_live_diagnostic_records_one_successful_mcp_case_without_overwriting_par
 
 
 def test_live_diagnostic_fails_closed_after_mcp_timeout(tmp_path, monkeypatch):
-    cases = _valid_cases()
-    cases[0]["required_tools"] = ["search_policy_documents"]
+    cases = load_cases()
     monkeypatch.setattr(evaluation, "load_cases", lambda: cases)
     monkeypatch.setattr(
         evaluation, "_live_config", lambda: SimpleNamespace(model_name="test-model")
@@ -351,17 +356,55 @@ def test_live_diagnostic_fails_closed_after_mcp_timeout(tmp_path, monkeypatch):
     assert row["failure_code"] == "mcp_tool_call_failed"
 
 
-def test_diagnostic_cli_returns_failure_status_to_gate_full_evaluation(
-    tmp_path, monkeypatch
+@pytest.mark.parametrize("case_id", [None, "EVAL-003"])
+def test_diagnostic_cli_selects_one_case_and_returns_failure_status_to_gate_full_evaluation(
+    tmp_path, monkeypatch, case_id
 ):
+    argv = ["run_evaluation.py", "--diagnostic", "--output-dir", str(tmp_path)]
+    if case_id is not None:
+        argv.extend(["--diagnostic-case", case_id])
+    monkeypatch.setattr(sys, "argv", argv)
+    calls = []
+
+    def fake_diagnostic(output_dir, *, case_id):
+        calls.append((output_dir, case_id))
+        return False
+
+    monkeypatch.setattr(evaluation, "run_live_diagnostic", fake_diagnostic)
+
+    assert evaluation.main() == 1
+    assert calls == [(tmp_path, case_id or "EVAL-001")]
+
+
+@pytest.mark.parametrize("mode", ["--live", "--validate-only"])
+def test_diagnostic_case_option_rejects_other_modes_before_execution(monkeypatch, mode):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["run_evaluation.py", "--diagnostic", "--output-dir", str(tmp_path)],
+        ["run_evaluation.py", mode, "--diagnostic-case", "EVAL-003"],
     )
-    monkeypatch.setattr(evaluation, "run_live_diagnostic", lambda _output_dir: False)
 
-    assert evaluation.main() == 1
+    with pytest.raises(SystemExit) as exc:
+        evaluation.main()
+    assert exc.value.code == 2
+
+
+@pytest.mark.parametrize("case_id", ["EVAL-999", "EVAL-001"])
+def test_diagnostic_rejects_unknown_or_non_mcp_case_before_live_configuration(
+    tmp_path, monkeypatch, case_id
+):
+    cases = load_cases()
+    cases[0]["required_tools"] = []
+    monkeypatch.setattr(evaluation, "load_cases", lambda: cases)
+
+    def fail_if_configured():
+        pytest.fail("Invalid case selection must not configure or start a live session.")
+
+    monkeypatch.setattr(evaluation, "_live_config", fail_if_configured)
+
+    with pytest.raises(ValueError, match="Unknown diagnostic case|must require an MCP tool"):
+        evaluation.run_live_diagnostic(tmp_path, case_id=case_id)
+    assert not (tmp_path / "diagnostic.jsonl").exists()
 
 
 def test_live_evaluation_output_dir_preserves_existing_results(tmp_path, monkeypatch):

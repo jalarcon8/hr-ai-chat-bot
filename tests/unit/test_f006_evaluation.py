@@ -468,6 +468,7 @@ def test_live_evaluation_output_dir_preserves_existing_results(tmp_path, monkeyp
     assert report_paths == [output_dir / "results.md"]
 
 
+@pytest.mark.parametrize("coverage_first", [False, True])
 @pytest.mark.parametrize(
     ("diagnostic", "expected_calls", "expected_reason"),
     [
@@ -482,11 +483,19 @@ def test_live_evaluation_output_dir_preserves_existing_results(tmp_path, monkeyp
     ],
 )
 def test_continuation_records_failures_once_and_stops_at_bound(
-    tmp_path, diagnostic, expected_calls, expected_reason
+    tmp_path, diagnostic, expected_calls, expected_reason, coverage_first
 ):
     trace = tmp_path / "trace.jsonl"
     trace.write_text(json.dumps({"events": [{"provider_diagnostic": {"http_status": 401}}]}) + "\n")
     cases = load_cases()[3:9]
+    if coverage_first:
+        cases = [
+            case for case in load_cases() if case["case_id"] in evaluation.COVERAGE_CASE_IDS
+        ]
+    if coverage_first and diagnostic == {
+        "http_status": 400, "provider_error_code": "tool_use_failed",
+    }:
+        expected_calls, expected_reason = len(cases), None
     attempted = []
 
     class Session:
@@ -504,16 +513,18 @@ def test_continuation_records_failures_once_and_stops_at_bound(
         Session(), cases, run_id="run", code_revision="sha", model_id="model",
         output_path=output, sleep=lambda _delay: None,
         continue_on_failure=True, provider_trace_path=trace,
+        coverage_first=coverage_first,
     )
     assert len(attempted) == expected_calls
     assert len(set(attempted)) == len(attempted)
-    assert rows[-1]["evaluation_stop_reason"] == expected_reason
+    assert rows[-1].get("evaluation_stop_reason") == expected_reason
     if diagnostic is not None and diagnostic.get("http_status") == 400:
         assert rows[0]["provider_diagnostic"]["http_status"] == 400
     assert len(output.read_text().splitlines()) == expected_calls
+    journal_name = "coverage-attempts.jsonl" if coverage_first else "continuation-attempts.jsonl"
     journal = [
         json.loads(line)
-        for line in (tmp_path / "continuation-attempts.jsonl").read_text().splitlines()
+        for line in (tmp_path / journal_name).read_text().splitlines()
     ]
     assert [entry["state"] for entry in journal] == ["started", "finished"] * expected_calls
 
@@ -575,8 +586,9 @@ def test_continuation_selection_preserves_defaults_and_requires_ten_latency_samp
         evaluation.run_continuation(tmp_path)
 
 
-def test_continuation_cli_rejects_missing_output_dir_before_live_work(monkeypatch):
-    monkeypatch.setattr(sys, "argv", ["run_evaluation.py", "--continue-remaining"])
+@pytest.mark.parametrize("mode", ["--continue-remaining", "--cover-unattempted"])
+def test_continuation_cli_rejects_missing_output_dir_before_live_work(monkeypatch, mode):
+    monkeypatch.setattr(sys, "argv", ["run_evaluation.py", mode])
     with pytest.raises(SystemExit) as exc:
         evaluation.main()
     assert exc.value.code == 2
@@ -590,6 +602,150 @@ def test_duplicate_selection_is_rejected_before_attempting_any_case(tmp_path):
             output_path=tmp_path / "results.jsonl",
         )
     assert not (tmp_path / "results.jsonl").exists()
+
+
+def test_coverage_counts_repeated_infrastructure_failures_but_not_tool_generation(tmp_path):
+    trace = tmp_path / "trace.jsonl"
+    attempted = []
+
+    class Session:
+        def process_request(self, request, context=None):
+            attempted.append(request)
+            if len(attempted) % 2:
+                with trace.open("a") as handle:
+                    handle.write(json.dumps({"events": [{"provider_diagnostic": {
+                        "http_status": 400, "provider_error_code": "tool_use_failed",
+                    }}]}) + "\n")
+                raise AgentRuntimeError("llm_request_failed")
+            raise AgentRuntimeError("mcp_tool_call_failed")
+
+    rows = run_cases(
+        Session(), load_cases()[3:], run_id="run", code_revision="sha", model_id="model",
+        output_path=tmp_path / "coverage-results.jsonl", sleep=lambda _delay: None,
+        continue_on_failure=True, provider_trace_path=trace, coverage_first=True,
+    )
+    assert len(attempted) == len(set(attempted)) == len(rows) == 6
+    assert rows[-1]["evaluation_stop_reason"] == "failure_limit"
+    assert [row["outcome"] for row in rows] == [
+        "provider_failure", "operational_failure",
+    ] * 3
+
+
+def test_coverage_retains_fatal_category_stop_even_with_tool_failure_code(tmp_path):
+    trace = tmp_path / "trace.jsonl"
+
+    class Session:
+        def process_request(self, request, context=None):
+            trace.write_text(json.dumps({"events": [{"provider_diagnostic": {
+                "http_status": 400, "provider_error_code": "tool_use_failed",
+                "category": "authentication",
+            }}]}) + "\n")
+            raise AgentRuntimeError("llm_request_failed")
+
+    rows = run_cases(
+        Session(), load_cases()[3:], run_id="run", code_revision="sha", model_id="model",
+        output_path=tmp_path / "coverage-results.jsonl", sleep=lambda _delay: None,
+        continue_on_failure=True, provider_trace_path=trace, coverage_first=True,
+    )
+    assert len(rows) == 1
+    assert rows[0]["evaluation_stop_reason"] == "fatal_provider_error"
+
+
+def test_coverage_selects_only_unattempted_cases_and_reserves_new_artifacts(tmp_path, monkeypatch):
+    output = tmp_path / "fresh"
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(evaluation, "_git_revision", lambda: "sha")
+    monkeypatch.setattr(
+        evaluation, "_live_config",
+        lambda: SimpleNamespace(
+            model_name="test-model", trace_path=output / "agent.jsonl", max_tool_calls=3,
+        ),
+    )
+    monkeypatch.setenv("HR_MCP_TRACE_PATH", str(output / "mcp.jsonl"))
+    sessions = []
+    monkeypatch.setattr(
+        evaluation, "AgentSession",
+        lambda _config: sessions.append(True) or SimpleNamespace(close=lambda: None),
+    )
+    observed = []
+
+    def fake_run_cases(_session, cases, **kwargs):
+        assert kwargs["coverage_first"] is True
+        assert kwargs["output_path"] == output / "coverage-results.jsonl"
+        observed.extend(case["case_id"] for case in cases)
+        return [
+            {"outcome": "completed", "response_status": "answered", "duration_ms": i + 1}
+            for i in range(len(cases))
+        ]
+
+    monkeypatch.setattr(evaluation, "run_cases", fake_run_cases)
+    original_cases = load_cases()
+    assert evaluation.run_continuation(output, coverage_first=True)
+    prior = json.loads(
+        (evaluation.EVALUATION_DIR / "completion-metrics.json").read_text()
+    )["attempted_case_ids"]
+    assert len(observed) == len(set(observed)) == 13
+    assert set(observed) == {case["case_id"] for case in original_cases} - set(prior)
+    assert observed == [
+        "EVAL-017", "EVAL-006", "EVAL-010", "EVAL-014", "EVAL-018",
+        "EVAL-007", "EVAL-011", "EVAL-015", "EVAL-019",
+        "EVAL-008", "EVAL-012", "EVAL-016", "EVAL-020",
+    ]
+    assert load_cases() == original_cases
+    summary = json.loads((output / "coverage-summary.json").read_text())
+    assert summary["max_completion_calls"] == 52
+    assert summary["max_sdk_http_attempts_estimate"] == 156
+    assert summary["overall_job_timeout_minutes"] == 15
+    assert summary["live_step_timeout_minutes"] == 10
+    assert summary["p50_ms"] == 7 and summary["p95_ms"] == 13
+    with pytest.raises(FileExistsError):
+        evaluation.run_continuation(output, coverage_first=True)
+    assert len(sessions) == 1
+
+
+@pytest.mark.parametrize("guard", ["tool_budget", "agent_trace", "mcp_trace"])
+def test_coverage_rejects_unsafe_configuration_before_creating_session(
+    tmp_path, monkeypatch, guard
+):
+    output = tmp_path / "fresh"
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(
+        evaluation, "_live_config",
+        lambda: SimpleNamespace(
+            model_name="test-model",
+            trace_path=(tmp_path if guard == "agent_trace" else output) / "agent.jsonl",
+            max_tool_calls=4 if guard == "tool_budget" else 3,
+        ),
+    )
+    monkeypatch.setenv(
+        "HR_MCP_TRACE_PATH",
+        str((tmp_path if guard == "mcp_trace" else output) / "mcp.jsonl"),
+    )
+    monkeypatch.setattr(evaluation, "AgentSession", lambda _config: pytest.fail("live session"))
+    with pytest.raises(ValueError):
+        evaluation.run_continuation(output, coverage_first=True)
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("history", ["result", "started_journal", "repository_output"])
+def test_coverage_preflight_rejects_prior_attempt_or_repository_output(
+    tmp_path, monkeypatch, history
+):
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(evaluation, "_live_config", lambda: pytest.fail("live configuration"))
+    if history == "repository_output":
+        output = evaluation.ROOT / "evaluation" / "new-output"
+    else:
+        evidence = tmp_path / "history"
+        evidence.mkdir()
+        monkeypatch.setattr(evaluation, "EVALUATION_DIR", evidence)
+        (evidence / "prior.jsonl").write_text(json.dumps({
+            "case_id": "EVAL-006",
+            **({"state": "started"} if history == "started_journal" else {"outcome": "completed"}),
+        }) + "\n")
+        output = tmp_path / "fresh"
+    with pytest.raises(ValueError, match="already attempted|outside the repository"):
+        evaluation.run_continuation(output, coverage_first=True)
 
 
 def test_interrupted_case_remains_in_attempt_journal(tmp_path):

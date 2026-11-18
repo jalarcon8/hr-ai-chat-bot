@@ -104,6 +104,16 @@ artifact files are separate. T015's ordinary hosted checks are verified at the n
 but local live acceptance remains blocked; T018 remains manual. Stop for owner review:
 no additional live run or architecture change is authorized.
 
+### Coverage-first preparation (approved for one run)
+
+[Proposed thirteen-case continuation](../../evaluation/coverage-first-plan.md) prepares
+evaluation-only selection of the never-attempted cases, an exemption only for HTTP 400
+`tool_use_failed`, unchanged fatal stops and a three-other-failure infrastructure bound.
+It uses a 15-minute overall evaluation-job limit, 10-minute live-step sublimit, exclusive
+outside-repository outputs and new artifacts. Historical T014 coverage/grades remain
+unchanged. The owner subsequently approved protected-main publication and exactly one run;
+no live execution or merge is claimed at this publication checkpoint.
+
 ## Requirement-to-task coverage
 
 | Requirement | Implementation tasks | Verification tasks |

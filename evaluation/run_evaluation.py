@@ -63,6 +63,11 @@ CONTINUATION_CASE_IDS = (
     "EVAL-007", "EVAL-011", "EVAL-015", "EVAL-019",
     "EVAL-008", "EVAL-012", "EVAL-016", "EVAL-020",
 )
+COVERAGE_CASE_IDS = (
+    "EVAL-017", "EVAL-006", "EVAL-010", "EVAL-014", "EVAL-018",
+    "EVAL-007", "EVAL-011", "EVAL-015", "EVAL-019",
+    "EVAL-008", "EVAL-012", "EVAL-016", "EVAL-020",
+)
 
 
 def _new_provider_diagnostic(path: Path, offset: int) -> dict[str, Any] | None:
@@ -333,11 +338,17 @@ def run_cases(
     sleep: Callable[[float], None] = time.sleep,
     continue_on_failure: bool = False,
     provider_trace_path: Path | None = None,
+    coverage_first: bool = False,
 ) -> list[dict[str, Any]]:
     if len({case["case_id"] for case in cases}) != len(cases):
         raise ValueError("A case may be attempted at most once in a run.")
     if continue_on_failure and provider_trace_path is None:
         raise ValueError("Continuation requires a separate provider trace path.")
+    if coverage_first and not continue_on_failure:
+        raise ValueError("Coverage-first mode requires continuation failure handling.")
+    journal_path = output_path.with_name(
+        "coverage-attempts.jsonl" if coverage_first else "continuation-attempts.jsonl"
+    )
     rows: list[dict[str, Any]] = []
     failures = 0
     for index, case in enumerate(cases):
@@ -352,7 +363,7 @@ def run_cases(
         )
         if continue_on_failure:
             _append_jsonl(
-                output_path.with_name("continuation-attempts.jsonl"),
+                journal_path,
                 {"case_id": case["case_id"], "state": "started",
                  "timestamp": datetime.now(UTC).isoformat()},
             )
@@ -383,22 +394,28 @@ def run_cases(
             )
         failed = row["outcome"] != "completed"
         stop_reason = None
-        if failed:
-            failures += 1
-            if continue_on_failure:
-                assert provider_trace_path is not None
-                if row["outcome"] == "provider_failure":
-                    row["provider_diagnostic"] = _new_provider_diagnostic(
-                        provider_trace_path, trace_offset
-                    )
-                stop_reason = _continuation_stop_reason(row, failures)
-                if stop_reason:
-                    row["evaluation_stop_reason"] = stop_reason
+        if failed and continue_on_failure:
+            assert provider_trace_path is not None
+            if row["outcome"] == "provider_failure":
+                row["provider_diagnostic"] = _new_provider_diagnostic(
+                    provider_trace_path, trace_offset
+                )
+            diagnostic = row.get("provider_diagnostic") or {}
+            tolerated = (
+                coverage_first
+                and row["outcome"] == "provider_failure"
+                and diagnostic.get("http_status") == 400
+                and diagnostic.get("provider_error_code") == "tool_use_failed"
+            )
+            failures += not tolerated
+            stop_reason = _continuation_stop_reason(row, failures)
+            if stop_reason:
+                row["evaluation_stop_reason"] = stop_reason
         _append_jsonl(output_path, row)
         rows.append(row)
         if continue_on_failure:
             _append_jsonl(
-                output_path.with_name("continuation-attempts.jsonl"),
+                journal_path,
                 {"case_id": case["case_id"], "state": "finished",
                  "timestamp": datetime.now(UTC).isoformat()},
             )
@@ -756,18 +773,39 @@ def run_live_evaluation(output_dir: Path | None = None) -> bool:
     return len(rows) == len(cases) and outcomes["completed"] == len(cases)
 
 
-def run_continuation(output_dir: Path) -> bool:
+def run_continuation(output_dir: Path, *, coverage_first: bool = False) -> bool:
     if sys.platform != "linux":
         raise RuntimeError("The bounded continuation is Linux/Ubuntu-only.")
+    case_ids = COVERAGE_CASE_IDS if coverage_first else CONTINUATION_CASE_IDS
     by_id = {case["case_id"]: case for case in load_cases()}
-    cases = [by_id[case_id] for case_id in CONTINUATION_CASE_IDS]
+    cases = [by_id[case_id] for case_id in case_ids]
+    if coverage_first:
+        for path in EVALUATION_DIR.rglob("*.jsonl"):
+            with path.open(encoding="utf-8-sig") as evidence:
+                for line in evidence:
+                    if line.strip() and json.loads(line).get("case_id") in case_ids:
+                        raise ValueError(f"Selected coverage case was already attempted: {path}")
+        output_dir = output_dir.resolve()
+        if output_dir.is_relative_to(ROOT):
+            raise ValueError("Coverage output must be outside the repository.")
     config = _live_config()
     if config.trace_path is None:
         raise ValueError("AGENT_TRACE_PATH is required for fatal provider-error detection.")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    results_path = output_dir / "continuation-results.jsonl"
-    summary_path = output_dir / "continuation-summary.json"
-    manifest_path = output_dir / "continuation-manifest.json"
+    if coverage_first:
+        if config.max_tool_calls != 3:
+            raise ValueError("Coverage request budget requires the existing three-tool limit.")
+        mcp_trace = get_agent_setting("HR_MCP_TRACE_PATH")
+        if (
+            not config.trace_path.resolve().is_relative_to(output_dir)
+            or not mcp_trace
+            or not Path(mcp_trace).resolve().is_relative_to(output_dir)
+        ):
+            raise ValueError("Coverage agent and MCP traces must use the new output directory.")
+    output_dir.mkdir(parents=True, exist_ok=not coverage_first)
+    prefix = "coverage" if coverage_first else "continuation"
+    results_path = output_dir / f"{prefix}-results.jsonl"
+    summary_path = output_dir / f"{prefix}-summary.json"
+    manifest_path = output_dir / f"{prefix}-manifest.json"
     if any(path.exists() for path in (results_path, summary_path, manifest_path)):
         raise FileExistsError("Refusing to repeat or overwrite the continuation.")
     run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
@@ -775,14 +813,25 @@ def run_continuation(output_dir: Path) -> bool:
         "run_id": run_id,
         "code_revision": _git_revision(),
         "model_id": config.model_name,
-        "case_ids": list(CONTINUATION_CASE_IDS),
-        "timing_panel": list(CONTINUATION_CASE_IDS),
+        "case_ids": list(case_ids),
+        "timing_panel": list(case_ids),
         "max_provider_operational_failures": 3,
         "live_step_timeout_minutes": 15,
         "case_retries": 0,
         "diagnostic": "skipped; previous successful diagnostic preserved separately",
         "retrieval_comparison": "reuse evaluation/retrieval_comparison.json unchanged",
     }
+    if coverage_first:
+        del manifest["max_provider_operational_failures"]
+        manifest.update({
+            "max_nonexempt_provider_operational_failures": 3,
+            "failure_limit_exemption": "HTTP 400 tool_use_failed only; fatal checks unchanged",
+            "overall_job_timeout_minutes": 15,
+            "live_step_timeout_minutes": 10,
+            "max_completion_calls": len(cases) * (config.max_tool_calls + 1),
+            "sdk_default_retries": 2,
+            "max_sdk_http_attempts_estimate": len(cases) * (config.max_tool_calls + 1) * 3,
+        })
     with manifest_path.open("x", encoding="utf-8") as manifest_file:
         json.dump(manifest, manifest_file, indent=2)
     session = AgentSession(config)
@@ -796,6 +845,7 @@ def run_continuation(output_dir: Path) -> bool:
             output_path=results_path,
             continue_on_failure=True,
             provider_trace_path=config.trace_path,
+            coverage_first=coverage_first,
         )
     finally:
         session.close()
@@ -840,6 +890,10 @@ def main() -> int:
         "--continue-remaining", action="store_true",
         help="authorize the bounded Ubuntu EVAL-004-020 continuation, no diagnostic",
     )
+    mode.add_argument(
+        "--cover-unattempted", action="store_true",
+        help="authorize one Ubuntu-only coverage run of the thirteen untouched cases",
+    )
     parser.add_argument(
         "--diagnostic-case",
         help="case ID for --diagnostic (default: EVAL-001); does not select full-suite cases",
@@ -852,8 +906,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.diagnostic_case is not None and not args.diagnostic:
         parser.error("--diagnostic-case requires --diagnostic")
-    if args.continue_remaining and args.output_dir is None:
-        parser.error("--continue-remaining requires a separate --output-dir")
+    if (args.continue_remaining or args.cover_unattempted) and args.output_dir is None:
+        parser.error("Continuation modes require a separate --output-dir")
     cases = load_cases()
     if args.validate_only:
         latency_count = sum(case["latency_sample"] for case in cases)
@@ -869,6 +923,8 @@ def main() -> int:
         ) else 1
     if args.continue_remaining:
         return 0 if run_continuation(args.output_dir) else 1
+    if args.cover_unattempted:
+        return 0 if run_continuation(args.output_dir, coverage_first=True) else 1
     return 0 if run_live_evaluation(args.output_dir) else 1
 
 

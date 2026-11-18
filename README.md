@@ -29,6 +29,10 @@ evaluation are not verified. **No further live evaluation or EVAL-003 retry is a
 The [bounded execution contract](evaluation/completion-plan.md) is historical, not permission
 for another run.
 
+The owner approved a [single coverage-first thirteen-case run](evaluation/coverage-first-plan.md)
+after protected-main CI and merge. Its opt-in controls do not permit case retries, a second
+run or overwriting any result above. Results remain pending at this publication checkpoint.
+
 Delivery documents:
 [deployment and health equivalent](docs/deployed.md),
 [design and evaluation](docs/design-and-evaluation.md),

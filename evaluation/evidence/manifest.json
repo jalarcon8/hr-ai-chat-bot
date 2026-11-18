@@ -1,0 +1,168 @@
+{
+  "format": "documentation",
+  "generated_utc": "2026-11-18T02:36:10.0657214Z",
+  "files": [
+    {
+      "path": "ubuntu-44031373821/checked-out-sha.txt",
+      "byte_size": 41,
+      "sha256": "42dcb1e7baec8fc6e20b422b50abdef328f0d6a1316736482fe6059943cbe609",
+      "workflow_run_id": "44031373821"
+    },
+    {
+      "path": "ubuntu-44031373821/diagnostic.jsonl",
+      "byte_size": 621,
+      "sha256": "c4e1fab78556f66a1411132cf571229d8ad34c4a5ac86d3373157b6791581dcc",
+      "workflow_run_id": "44031373821"
+    },
+    {
+      "path": "ubuntu-44031373821/diagnostic.log",
+      "byte_size": 2041,
+      "sha256": "b2397256e402411d403e633ac65a4b9955f7c08823a7dd6b1051fd17a7419ea1",
+      "workflow_run_id": "44031373821"
+    },
+    {
+      "path": "ubuntu-44031373821/github-sha.txt",
+      "byte_size": 41,
+      "sha256": "42dcb1e7baec8fc6e20b422b50abdef328f0d6a1316736482fe6059943cbe609",
+      "workflow_run_id": "44031373821"
+    },
+    {
+      "path": "ubuntu-44031373821/mcp-traces.jsonl",
+      "byte_size": 1013,
+      "sha256": "038a6471b126d9472b0b938f3cf106b698ebe238456ab70d5c018b802dc79b5a",
+      "workflow_run_id": "44031373821"
+    },
+    {
+      "path": "ubuntu-44211752259/agent-traces.jsonl",
+      "byte_size": 4727,
+      "sha256": "b540a6930b56f7934911c77e8705fc0d3f6deba2ac8c6166bd87a16b8b0815ed",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44211752259/checked-out-sha.txt",
+      "byte_size": 41,
+      "sha256": "8039d414d67fd5117cd71838c1b5df46b50a0d4e82c24cfb145989136a4d48c8",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44211752259/diagnostic.jsonl",
+      "byte_size": 2064,
+      "sha256": "9fb6b0ca9341c82d7b3e8d3d9496277f49af8b066e11c5d977e40ea6edad314b",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44211752259/diagnostic.log",
+      "byte_size": 1534,
+      "sha256": "701f0ca7c23e7cbf9dd8afb5fae8bf60dfe376589a24012b0e4e428066a62ade",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44211752259/evaluation.log",
+      "byte_size": 1536,
+      "sha256": "d6b1bf1cbb3ab21793d14d617afc54f344c6522117a589364ee594805f9fec12",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44211752259/github-sha.txt",
+      "byte_size": 41,
+      "sha256": "8039d414d67fd5117cd71838c1b5df46b50a0d4e82c24cfb145989136a4d48c8",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44211752259/mcp-traces.jsonl",
+      "byte_size": 3030,
+      "sha256": "19cf4638b9e31ac7df864d4f4ae377bd18d798bbf96765b666ee5391769718b2",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44211752259/results.jsonl",
+      "byte_size": 4511,
+      "sha256": "56c6c577a55def90eae2acc2e082dd9d8f1a8e0cb3f5d779aa84836269c40178",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44211752259/retrieval_comparison.json",
+      "byte_size": 7737,
+      "sha256": "70caacb47c801f46a744d34093c5d4a01325a4a964cadd9c239bcacd64729bfb",
+      "workflow_run_id": "44211752259"
+    },
+    {
+      "path": "ubuntu-44220869982/agent-traces.jsonl",
+      "byte_size": 612,
+      "sha256": "b77d37099ec83fa98b30fc4273d3600b059045be344302f230f62568536326cc",
+      "workflow_run_id": "44220869982"
+    },
+    {
+      "path": "ubuntu-44220869982/checked-out-sha.txt",
+      "byte_size": 41,
+      "sha256": "e36022e7c10326eba6c99463cf427bbbfde6f487de51d1d191ef832a350525b4",
+      "workflow_run_id": "44220869982"
+    },
+    {
+      "path": "ubuntu-44220869982/diagnostic.jsonl",
+      "byte_size": 738,
+      "sha256": "09ae1bc16a99844515bdc2e2bfd4d721ceb57d86bad0e6d08955d63cf0d48b11",
+      "workflow_run_id": "44220869982"
+    },
+    {
+      "path": "ubuntu-44220869982/diagnostic.log",
+      "byte_size": 643,
+      "sha256": "c677fdcb9268e4fba8a109565e0d04db61f9c0a1162494359af02ec79d278178",
+      "workflow_run_id": "44220869982"
+    },
+    {
+      "path": "ubuntu-44220869982/github-sha.txt",
+      "byte_size": 41,
+      "sha256": "e36022e7c10326eba6c99463cf427bbbfde6f487de51d1d191ef832a350525b4",
+      "workflow_run_id": "44220869982"
+    },
+    {
+      "path": "ubuntu-44220869982/mcp-traces.jsonl",
+      "byte_size": 476,
+      "sha256": "7c5a83d11d065688519b12b8ebd96e5d1b72aaca1e59c88c33ce9da7a936e4d2",
+      "workflow_run_id": "44220869982"
+    },
+    {
+      "path": "ubuntu-44220869982/summary.json",
+      "byte_size": 2421,
+      "sha256": "846638c6eb2ed738c8771f0c0d43a572375e7457b9c70f7b4d658c6590d293f0",
+      "workflow_run_id": "44220869982"
+    },
+    {
+      "path": "windows-eval003/agent-traces.jsonl",
+      "byte_size": 1259,
+      "sha256": "b75648cb919cacbba2111066989ab7edd3b026960f17eb9d21b67a5448d48592",
+      "local_diagnostic": "f006-eval003-isolated-20261118"
+    },
+    {
+      "path": "windows-eval003/diagnostic.jsonl",
+      "byte_size": 836,
+      "sha256": "c228ae05bdfdb53339c25ee034412acc59e992b4347286ba3894c74c588bbc47",
+      "local_diagnostic": "f006-eval003-isolated-20261118"
+    },
+    {
+      "path": "windows-eval003/mcp-traces.jsonl",
+      "byte_size": 1002,
+      "sha256": "a803e15396e8a6c547d9ffe8cc18fd2f25eba70c5d52bde8661d79b831a007f8",
+      "local_diagnostic": "f006-eval003-isolated-20261118"
+    },
+    {
+      "path": "windows-eval003/metadata.json",
+      "byte_size": 421,
+      "sha256": "047b7e50a399738fbe25634e5c45dddbba6577a11ea38efba5bfc42f08eb653e",
+      "local_diagnostic": "f006-eval003-isolated-20261118"
+    },
+    {
+      "path": "windows-eval003/summary.json",
+      "byte_size": 1408,
+      "sha256": "030cac763a3883e79c711e70325f2b71902653ac2f263557ae42c54d8f61d15a",
+      "local_diagnostic": "f006-eval003-isolated-20261118"
+    },
+    {
+      "path": "ubuntu-44211752259/results.md",
+      "byte_size": 2164,
+      "sha256": "49508175031c3764573392ea6e21dfbca555262ebcae3623befc46c65f3f88ab",
+      "workflow_run_id": "44211752259"
+    }
+  ]
+}

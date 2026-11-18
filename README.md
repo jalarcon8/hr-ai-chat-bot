@@ -8,7 +8,35 @@ The application uses a fictional company's HR policies and synthetic employee da
 
 The project prioritizes a lightweight, modular architecture that satisfies the assignment requirements without unnecessary complexity.
 
-## Planned Technology Stack
+## Deployment and final delivery status
+
+- Deployed application: <https://hr-ai-chat-bot-jonathan-alarcon.streamlit.app/>
+- Repository: <https://github.com/jalarcon8/hr-ai-chat-bot>
+- Recorded demonstration: **pending; no demo link supplied**.
+
+The owner reports successful deployed prompts. The bounded Ubuntu suite completed two
+answers, failed EVAL-003, and left 17 cases unattempted. Subsequent offline review found
+neither completed answer fully satisfied its rubric; original ungraded fields are preserved.
+A separate diagnostic
+demonstrated policy search through MCP and a final Groq response; it does not verify both
+employee workflows. Representative quality coverage and 10-20-sample latency percentiles remain
+incomplete. **Further live evaluation/debugging is paused by owner decision.**
+
+**Subsequent bounded authorization:** the owner approved one Ubuntu-only EVAL-004-020
+continuation after protected-main merge, with no case retries, a 15-minute live-step limit,
+fatal-provider stops and at most three provider/operational failures. See the
+[completion contract and offline scoring](evaluation/completion-plan.md).
+This exception does not authorize EVAL-003 retries, another diagnostic or a full-suite rerun.
+
+Delivery documents:
+[deployment and health equivalent](docs/deployed.md),
+[design and evaluation](docs/design-and-evaluation.md),
+[AI-tooling disclosure](docs/ai-tooling.md),
+[consolidated evaluation report](evaluation/final-report.md),
+[demo/submission checklist](docs/demo-checklist.md),
+and [requirements traceability](docs/requirements/traceability.md).
+
+## Technology Stack
 
 | Component | Technology |
 |---|---|
@@ -21,7 +49,7 @@ The project prioritizes a lightweight, modular architecture that satisfies the a
 | Employee data | Synthetic JSON |
 | Testing | pytest |
 | CI/CD | GitHub Actions |
-| Deployment | Free-tier-compatible cloud hosting |
+| Deployment | Streamlit Community Cloud; same-service MCP stdio subprocess |
 
 ## Feature Roadmap
 
@@ -124,22 +152,23 @@ Feature 003; Feature 001 and Feature 002 retain their existing environment-varia
 Run routine tests and linting without Groq credentials or network calls to the provider:
 
 ```powershell
+$env:AGENT_RUN_PROVIDER_SMOKE = "0"
+$env:AGENT_RUN_F004_LIVE = "0"
 .\.venv\Scripts\python -m pytest -q
 .\.venv\Scripts\python -m ruff check .
+.\.venv\Scripts\python evaluation\run_evaluation.py --validate-only
 ```
 
-The live-provider test is disabled by default. To run it intentionally, configure a valid key
-and model in `.env`, then opt in for this PowerShell session:
+Live checks are opt-in. Keep both switches at `0` in the environment and `.env` for routine
+tests and CI; the process values above override local `.env` opt-ins. Five skipped live tests
+are not five successful live scenarios. Do not opt in or dispatch evaluation while the
+current owner-directed pause is in effect.
 
-```powershell
-$env:AGENT_RUN_PROVIDER_SMOKE = "1"
-.\.venv\Scripts\python -m pytest tests/integration/test_agent_provider.py -q -rs
-Remove-Item Env:\AGENT_RUN_PROVIDER_SMOKE
-```
-
-`AGENT_RUN_PROVIDER_SMOKE=1` may instead be set in `.env`, but then ordinary pytest runs also
-invoke the live provider. Leave it at `0` for routine tests and CI. The live test uses synthetic
-policy fixtures, requires provider access and quota, and is skipped when no key is configured.
+Latest local verification: **527 passed, 5 skipped**, repository-wide Ruff passed.
+The suite includes 16 AppTest and 3 agent/MCP integration tests. These provider-free results
+do not establish live answer correctness. Existing hosted Windows/Ubuntu checks passed at
+the code baseline; final documentation/evidence changes require their own protected-main
+review and CI. See the [final report](evaluation/final-report.md) for precise evidence scope.
 
 Feature 003 returns an unsent email proposal with an `action_id` and `pending_action`. Pass both
 back to `confirm_action` on the same `HRAgent` instance with an explicit boolean confirmation.
@@ -160,6 +189,26 @@ as authoritative context. Use **Check MCP health** to render JSON app/MCP status
 performs MCP discovery only. Draft confirmation and cancellation reuse the session's agent and
 never send email. See [the F005 quickstart](specs/005-chat-interface/quickstart.md) for
 validation evidence and limitations.
+
+For real synthetic data use sidebar ID **SYN-001** (80 PTO hours as of 2026-01-01);
+older `TEST-*` IDs belong to isolated tests, not the deployed dataset. The tracked app
+entry point is `src/hr_app/app.py`; no root-level `app.py` wrapper exists.
+
+### F006 deployment and evaluation
+
+Community Cloud uses Python 3.11, protected `main`, the app path above, the checked-in
+`.hr_rag_index` generation and `GROQ_API_KEY` in host Secrets. The UI bridges that secret
+to the existing environment-backed provider without overwriting an explicit process value.
+No separately hosted MCP URL or database is needed. An idle/restarted service and first
+embedding-model load may delay the first request; no hosted cold-start duration was measured.
+
+Use the [deployment record](docs/deployed.md) for configuration, the health-equivalent JSON
+and known limitations. The [F006 runbook](specs/006-deployment-ci-cd-evaluation/quickstart.md)
+retains historical evaluation commands for reproducibility, not authorization to rerun them.
+Original partial results and separate per-run evidence remain in `evaluation/`; never
+overwrite them or pool diagnostics into suite metrics. The latest hosted EVAL-003 diagnostic
+returned an employee-ID clarification without executing a tool: an operational completion,
+not a passing policy answer. No extra Groq requests are needed to inspect these artifacts.
 
 ## Feature 001: Local HR Policy RAG
 
@@ -196,7 +245,7 @@ Optional environment settings:
 | `HR_RAG_CHUNK_TOKENS` | `200` | Maximum tokens per chunk |
 | `HR_RAG_CHUNK_OVERLAP` | `30` | Overlap tokens |
 | `HR_RAG_TOP_K` | `5` | Default retrieval count |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Answer generation model |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Standalone F001 generator default; the deployed agent defaults to `openai/gpt-oss-20b` |
 | `GROQ_API_KEY` | unset | Required only for live Groq generation |
 
 ### Build and ask a policy question
@@ -241,11 +290,10 @@ instead of being returned as unsupported answers. See
 
 ### F001 validation status
 
-A clean Windows Python 3.11 virtual environment installed the pinned dependencies from
+At the earlier F001 checkpoint, a clean Windows Python 3.11 virtual environment installed the pinned dependencies from
 `requirements.txt` and the project in editable mode; `python -m pytest -q` completed with
-**48 passed in 1.75s** using FAISS 1.10.0, NumPy 1.26.4, and pytest 8.3.4. Linux runtime
-installation and tests were not run because this environment has no Linux host or WSL; T028
-remains incomplete until Linux validation is performed. This F001 validation record did not
+**48 passed in 1.75s** using FAISS 1.10.0, NumPy 1.26.4, and pytest 8.3.4. Linux installation/tests were unverified at that checkpoint; subsequent F006 hosted CI
+passed on Ubuntu and Windows. This historical F001 validation record did not
 include live Sentence Transformers/Groq inference. Deterministic tests verify structure, provenance, rebuild
 behavior, and error handling; semantic support must still be checked in the documented
 acceptance review or an opt-in provider smoke test.
@@ -253,8 +301,8 @@ acceptance review or an opt-in provider smoke test.
 ## Feature 002: MCP tools
 
 The implemented developer client starts one FastMCP server as a subprocess over MCP stdio.
-Discovery and calls cross that protocol boundary; future F003 agent orchestration is not yet
-implemented. Stdio keeps the local integration within a single service without a separate
+Discovery and calls cross that protocol boundary; the implemented F003 agent uses the same
+client via `AgentSession`. Stdio keeps the integration within a single service without a separate
 network listener. The server delegates search and section lookup to F001's active index, employee
 and PTO lookup to fictional `data/employees.json` and `data/pto.json`, bounded compliance to
 the evidence verifier, and email drafting to a deterministic template. Drafts are not sent or
@@ -315,11 +363,12 @@ The [verification record](specs/002-mcp-tool-integration/quickstart.md) distingu
 synthetic evidence from clean-install, Linux, production approval and deployment acceptance.
 F006 owns deployment, costs, quotas and final project-wide submission checks.
 
-### F002 validation status
+### F002 historical validation status
 
 On Windows 11, a clean Python 3.11.9 environment installed a project snapshot and passed
 306 tests with no skips and Ruff. The isolated synthetic MCP check passed. A cached real model
 built the standard index, but the live policy-search example timed out; see the
-[detailed results](specs/002-mcp-tool-integration/quickstart.md). Linux validation remains
-unavailable. The Actions workflow is configured for Windows and Linux, but no run of these
-uncommitted changes has been observed.
+[detailed results](specs/002-mcp-tool-integration/quickstart.md). Subsequent F006 hosted
+Windows/Ubuntu matrix checks passed. The local production-index policy-search timeout
+remains unresolved; successful hosted policy-search evidence and its limits are in the
+[final report](evaluation/final-report.md).

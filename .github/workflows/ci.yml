@@ -22,6 +22,11 @@ on:
         required: true
         type: string
         default: EVAL-001
+      continue_remaining:
+        description: Run only EVAL-004-020 once, skipping the prior diagnostic
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -104,10 +109,18 @@ jobs:
           python -m pip install -e ".[dev]"
 
       - name: Validate evaluation cases
-        run: python evaluation/run_evaluation.py --validate-only
+        env:
+          F006_CONTINUE_REMAINING: ${{ inputs.continue_remaining }}
+          F006_DIAGNOSTIC_ONLY: ${{ inputs.diagnostic_only }}
+        run: |
+          python evaluation/run_evaluation.py --validate-only
+          if [ "$F006_CONTINUE_REMAINING" = "true" ]; then
+            test "$F006_DIAGNOSTIC_ONLY" = "false"
+          fi
 
       - name: Run one MCP-backed diagnostic case
         id: mcp_diagnostic
+        if: ${{ !inputs.continue_remaining }}
         env:
           F006_DIAGNOSTIC_CASE: ${{ inputs.diagnostic_case }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
@@ -120,7 +133,7 @@ jobs:
             | tee "$RUNNER_TEMP/f006-evaluation/diagnostic.log"
 
       - name: Run bounded 20-case evaluation
-        if: ${{ success() && steps.mcp_diagnostic.outcome == 'success' && !inputs.diagnostic_only }}
+        if: ${{ success() && !inputs.continue_remaining && steps.mcp_diagnostic.outcome == 'success' && !inputs.diagnostic_only }}
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
           AGENT_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/agent-traces.jsonl
@@ -129,6 +142,19 @@ jobs:
           set -o pipefail
           python evaluation/run_evaluation.py --live --output-dir "$RUNNER_TEMP/f006-evaluation" 2>&1 \
             | tee "$RUNNER_TEMP/f006-evaluation/evaluation.log"
+
+      - name: Run bounded EVAL-004-020 continuation
+        if: ${{ success() && inputs.continue_remaining && !inputs.diagnostic_only }}
+        timeout-minutes: 15
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          AGENT_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/agent-traces.jsonl
+          HR_MCP_TRACE_PATH: ${{ runner.temp }}/f006-evaluation/mcp-traces.jsonl
+        run: |
+          set -o pipefail
+          python evaluation/run_evaluation.py --continue-remaining \
+            --output-dir "$RUNNER_TEMP/f006-evaluation" 2>&1 \
+            | tee "$RUNNER_TEMP/f006-evaluation/continuation.log"
 
       - name: Upload F006 evaluation artifacts
         if: always()

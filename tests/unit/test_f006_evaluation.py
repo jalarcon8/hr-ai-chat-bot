@@ -466,3 +466,146 @@ def test_live_evaluation_output_dir_preserves_existing_results(tmp_path, monkeyp
     assert (output_dir / "results.jsonl").exists()
     assert (output_dir / "retrieval_comparison.json").exists()
     assert report_paths == [output_dir / "results.md"]
+
+
+@pytest.mark.parametrize(
+    ("diagnostic", "expected_calls", "expected_reason"),
+    [
+        ({"http_status": 400, "provider_error_code": "tool_use_failed"}, 4, "failure_limit"),
+        ({"http_status": 401}, 1, "fatal_provider_error"),
+        ({"http_status": 403}, 1, "fatal_provider_error"),
+        ({"http_status": 429}, 1, "fatal_provider_error"),
+        ({"http_status": 404}, 1, "fatal_provider_error"),
+        ({"http_status": 400, "provider_error_code": "insufficient_quota"}, 1, "fatal_provider_error"),
+        ({"http_status": 400, "provider_error_code": "model_decommissioned"}, 1, "fatal_provider_error"),
+        (None, 1, "provider_diagnostic_unavailable"),
+    ],
+)
+def test_continuation_records_failures_once_and_stops_at_bound(
+    tmp_path, diagnostic, expected_calls, expected_reason
+):
+    trace = tmp_path / "trace.jsonl"
+    trace.write_text(json.dumps({"events": [{"provider_diagnostic": {"http_status": 401}}]}) + "\n")
+    cases = load_cases()[3:9]
+    attempted = []
+
+    class Session:
+        def process_request(self, request, context=None):
+            attempted.append(request)
+            if diagnostic is not None:
+                with trace.open("a") as handle:
+                    handle.write(json.dumps({"events": [{"provider_diagnostic": diagnostic}]}) + "\n")
+            if len(attempted) == 2:
+                return AgentResponse(answer="Synthetic answer", status="answered")
+            raise AgentRuntimeError("llm_request_failed")
+
+    output = tmp_path / "continuation-results.jsonl"
+    rows = run_cases(
+        Session(), cases, run_id="run", code_revision="sha", model_id="model",
+        output_path=output, sleep=lambda _delay: None,
+        continue_on_failure=True, provider_trace_path=trace,
+    )
+    assert len(attempted) == expected_calls
+    assert len(set(attempted)) == len(attempted)
+    assert rows[-1]["evaluation_stop_reason"] == expected_reason
+    if diagnostic is not None and diagnostic.get("http_status") == 400:
+        assert rows[0]["provider_diagnostic"]["http_status"] == 400
+    assert len(output.read_text().splitlines()) == expected_calls
+    journal = [
+        json.loads(line)
+        for line in (tmp_path / "continuation-attempts.jsonl").read_text().splitlines()
+    ]
+    assert [entry["state"] for entry in journal] == ["started", "finished"] * expected_calls
+
+
+def test_continuation_stops_after_three_operational_failures(tmp_path):
+    class Session:
+        def process_request(self, request, context=None):
+            raise AgentRuntimeError("mcp_tool_call_failed")
+
+    rows = run_cases(
+        Session(), load_cases()[3:], run_id="run", code_revision="sha", model_id="model",
+        output_path=tmp_path / "results.jsonl", sleep=lambda _delay: None,
+        continue_on_failure=True, provider_trace_path=tmp_path / "trace.jsonl",
+    )
+    assert len(rows) == 3
+    assert rows[-1]["evaluation_stop_reason"] == "failure_limit"
+    assert all(row["outcome"] == "operational_failure" for row in rows)
+
+
+@pytest.mark.parametrize("completed_count", [9, 10, 17])
+def test_continuation_selection_preserves_defaults_and_requires_ten_latency_samples(
+    tmp_path, monkeypatch, completed_count
+):
+    monkeypatch.setattr(sys, "platform", "linux")
+    monkeypatch.setattr(evaluation, "_git_revision", lambda: "sha")
+    monkeypatch.setattr(
+        evaluation, "_live_config",
+        lambda: SimpleNamespace(model_name="test-model", trace_path=tmp_path / "trace.jsonl"),
+    )
+    monkeypatch.setattr(
+        evaluation, "AgentSession", lambda _config: SimpleNamespace(close=lambda: None)
+    )
+    observed = []
+
+    def fake_run_cases(_session, cases, **kwargs):
+        observed.extend(case["case_id"] for case in cases)
+        assert kwargs["continue_on_failure"] is True
+        return [
+            {"outcome": "completed", "response_status": "clarification_needed", "duration_ms": i + 1}
+            for i in range(completed_count)
+        ]
+
+    monkeypatch.setattr(evaluation, "run_cases", fake_run_cases)
+    source_cases = load_cases()
+    evaluation.run_continuation(tmp_path)
+    assert observed == list(evaluation.CONTINUATION_CASE_IDS)
+    assert set(observed) == {f"EVAL-{i:03d}" for i in range(4, 21)}
+    categories = {case["case_id"]: case["category"] for case in source_cases}
+    assert [categories[case_id] for case_id in observed[:5]] == [
+        "policy", "multi_document", "tool_requiring", "ambiguous", "out_of_scope",
+    ]
+    assert len(set(observed)) == 17
+    assert load_cases() == source_cases
+    summary = json.loads((tmp_path / "continuation-summary.json").read_text())
+    assert summary["qualifying_latency_samples"] == completed_count
+    assert summary["p50_ms"] == (5 if completed_count == 10 else 9 if completed_count == 17 else None)
+    assert summary["p95_ms"] == (10 if completed_count == 10 else 17 if completed_count == 17 else None)
+    with pytest.raises(FileExistsError, match="Refusing to repeat"):
+        evaluation.run_continuation(tmp_path)
+
+
+def test_continuation_cli_rejects_missing_output_dir_before_live_work(monkeypatch):
+    monkeypatch.setattr(sys, "argv", ["run_evaluation.py", "--continue-remaining"])
+    with pytest.raises(SystemExit) as exc:
+        evaluation.main()
+    assert exc.value.code == 2
+
+
+def test_duplicate_selection_is_rejected_before_attempting_any_case(tmp_path):
+    case = load_cases()[0]
+    with pytest.raises(ValueError, match="at most once"):
+        run_cases(
+            None, [case, case], run_id="run", code_revision="sha", model_id="model",
+            output_path=tmp_path / "results.jsonl",
+        )
+    assert not (tmp_path / "results.jsonl").exists()
+
+
+def test_interrupted_case_remains_in_attempt_journal(tmp_path):
+    class InterruptedSession:
+        def process_request(self, request, context=None):
+            raise RuntimeError("interrupted")
+
+    with pytest.raises(RuntimeError, match="interrupted"):
+        run_cases(
+            InterruptedSession(), load_cases()[3:4], run_id="run",
+            code_revision="sha", model_id="model", output_path=tmp_path / "results.jsonl",
+            continue_on_failure=True, provider_trace_path=tmp_path / "trace.jsonl",
+        )
+    journal = [
+        json.loads(line)
+        for line in (tmp_path / "continuation-attempts.jsonl").read_text().splitlines()
+    ]
+    assert [(entry["case_id"], entry["state"]) for entry in journal] == [("EVAL-004", "started")]
+    assert not (tmp_path / "results.jsonl").exists()

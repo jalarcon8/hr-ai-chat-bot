@@ -1,0 +1,14 @@
+/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/pydantic_settings/sources/utils.py:51: IncompleteFieldDefinitionWarning: Field 'lifespan' has an incomplete definition: its annotation contains an unresolved forward reference, so settings sources may fail to correctly resolve its value. Call `model_rebuild()` on the model where the field is defined, once all the referenced types are defined.
+  warnings.warn(  # noqa: B028  (called from many sources at differing depths, so no stacklevel is correct)
+[11/18/26 01:02:02] INFO     Load pretrained          SentenceTransformer.py:218
+                             SentenceTransformer:                               
+                             sentence-transformers/al                           
+                             l-MiniLM-L6-v2                                     
+[11/18/26 01:02:03] INFO     Loading faiss with AVX512 support.    loader.py:113
+                    INFO     Successfully loaded faiss with AVX512 loader.py:115
+                             support.                                           
+                    INFO     Failed to load GPU Faiss: name      __init__.py:173
+                             'GpuIndexIVFFlat' is not defined.                  
+                             Will not load constructor refs for                 
+                             GPU indexes.                                       
+Evaluation 20261118T010154Z-3d480837: attempted=3/20, completed=2, provider_failures=1, operational_failures=0, not_run=17

@@ -1,8 +1,17 @@
 # F006 Deployment and Evaluation Runbook
 
-This runbook describes planned F006 checks. Complete them only after implementation is
-approved and the project owner confirms Community Cloud account setup is available without
-payment information. All example employee data and requests are synthetic.
+This runbook retains reproducible F006 procedures. The owner confirmed free Community Cloud
+hosting and reported successful deployed prompts. **At the Milestone 4 checkpoint, further
+live evaluation and EVAL-003 debugging are paused.** Live instructions below are historical
+reference, not authorization to run them. All example data and requests are synthetic.
+Use the [final report](../../evaluation/final-report.md) for consolidated results and gaps,
+and the [demo checklist](../../docs/demo-checklist.md) for remaining manual delivery actions.
+
+The owner subsequently authorized exactly one bounded EVAL-004-020 continuation.
+Its [separate contract](../../evaluation/completion-plan.md) supersedes the pause only for
+that run, after protected-main CI/merge. It skips both diagnostic and full-suite steps;
+set `continue_remaining=true`, `run_live_evaluation=true`, `diagnostic_only=false`.
+No model, prompt, tool or application change is included.
 
 ## 1. Local readiness
 
@@ -20,6 +29,8 @@ Provide local `GROQ_API_KEY` through `.env` only for intentional live testing. N
 Run the focused automated checks before configuring deployment:
 
 ```powershell
+$env:AGENT_RUN_PROVIDER_SMOKE = "0"
+$env:AGENT_RUN_F004_LIVE = "0"
 .\.venv\Scripts\python -m pytest tests\test_chat_interface.py tests\integration\test_agent_mcp.py -q
 .\.venv\Scripts\python -m pytest -q
 .\.venv\Scripts\python -m ruff check .
@@ -27,9 +38,8 @@ Run the focused automated checks before configuring deployment:
 
 These are deterministic/provider-free checks. The AppTest UI test starts the Streamlit app in
 the test harness; the MCP integration test discovers and invokes the real stdio server with
-a scripted model. In the existing GitHub Actions workflow, add a named `Run Streamlit
-AppTest startup` step running `python -m pytest tests/test_chat_interface.py -q`; retain
-its MCP integration and full pytest steps.
+a scripted model. The existing GitHub Actions workflow already includes the named
+`Run Streamlit AppTest startup` step, MCP integration and full pytest on Windows and Ubuntu.
 
 ## 2. Prepare the deployment index
 
@@ -74,6 +84,9 @@ the named AppTest step, and the full pytest suite. Its separate Ubuntu evaluatio
 available only through a manual dispatch after the ordinary test matrix passes.
 
 ## 4. Deploy and verify one live vertical slice
+
+The app is already deployed by owner report. Do not repeat live prompts during the current
+pause; retain the verification steps below for a separately approved recording session.
 
 In Streamlit Community Cloud, configure:
 
@@ -123,6 +136,12 @@ not a provider failure. If a hosted smoke request fails:
 - Stop and record unresolved or quota failures; do not claim a successful live workflow.
 
 ## 5. Run the bounded evaluation once
+
+**Paused.** The Ubuntu suite has two completed ungraded answers, one provider failure and
+17 unattempted cases. The later isolated hosted EVAL-003 returned clarification without
+policy search and failed the diagnostic gate. Do not dispatch another diagnostic or the
+full suite to fill missing evidence. Read the [archived results](../../evaluation/final-report.md)
+without making provider requests. The following steps document the existing runner only.
 
 The local partial attempt is recorded in `evaluation/results.md` and must remain intact. The
 existing CI workflow provides a clean Ubuntu run that performs one MCP-backed diagnostic

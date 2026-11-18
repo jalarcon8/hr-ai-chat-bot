@@ -57,6 +57,49 @@ OPERATIONAL_FAILURE_CODES = {
 }
 REQUEST_DELAY_SECONDS = 1.0
 SAFE_CODE = re.compile(r"[a-z][a-z0-9_]{0,79}")
+CONTINUATION_CASE_IDS = (
+    "EVAL-004", "EVAL-005", "EVAL-009", "EVAL-013", "EVAL-017",
+    "EVAL-006", "EVAL-010", "EVAL-014", "EVAL-018",
+    "EVAL-007", "EVAL-011", "EVAL-015", "EVAL-019",
+    "EVAL-008", "EVAL-012", "EVAL-016", "EVAL-020",
+)
+
+
+def _new_provider_diagnostic(path: Path, offset: int) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    with path.open("rb") as trace_file:
+        trace_file.seek(offset)
+        traces = [json.loads(line) for line in trace_file if line.strip()]
+    for trace in reversed(traces):
+        for event in reversed(trace["events"]):
+            diagnostic = event.get("provider_diagnostic")
+            if isinstance(diagnostic, dict):
+                return {
+                    key: diagnostic[key]
+                    for key in ("category", "http_status", "provider_error_code")
+                    if key in diagnostic
+                }
+    return None
+
+
+def _continuation_stop_reason(row: dict[str, Any], failures: int) -> str | None:
+    if row["outcome"] == "provider_failure":
+        diagnostic = row.get("provider_diagnostic")
+        if not diagnostic:
+            return "provider_diagnostic_unavailable"
+        if (
+            diagnostic.get("http_status") in {401, 403, 404, 429}
+            or diagnostic.get("category") in {
+                "authentication", "permission_denied", "rate_limit", "not_found",
+            }
+            or diagnostic.get("provider_error_code") in {
+                "invalid_api_key", "insufficient_quota", "rate_limit_exceeded",
+                "model_not_found", "model_decommissioned",
+            }
+        ):
+            return "fatal_provider_error"
+    return "failure_limit" if failures >= 3 else None
 
 
 def validate_cases(raw: object) -> list[dict[str, Any]]:
@@ -288,12 +331,31 @@ def run_cases(
     output_path: Path,
     timer: Callable[[], float] = time.perf_counter,
     sleep: Callable[[float], None] = time.sleep,
+    continue_on_failure: bool = False,
+    provider_trace_path: Path | None = None,
 ) -> list[dict[str, Any]]:
+    if len({case["case_id"] for case in cases}) != len(cases):
+        raise ValueError("A case may be attempted at most once in a run.")
+    if continue_on_failure and provider_trace_path is None:
+        raise ValueError("Continuation requires a separate provider trace path.")
     rows: list[dict[str, Any]] = []
+    failures = 0
     for index, case in enumerate(cases):
         if index:
             sleep(REQUEST_DELAY_SECONDS)
         latency_condition = "first_request" if index == 0 else "warm"
+        trace_offset = (
+            provider_trace_path.stat().st_size
+            if continue_on_failure and provider_trace_path is not None
+            and provider_trace_path.exists()
+            else 0
+        )
+        if continue_on_failure:
+            _append_jsonl(
+                output_path.with_name("continuation-attempts.jsonl"),
+                {"case_id": case["case_id"], "state": "started",
+                 "timestamp": datetime.now(UTC).isoformat()},
+            )
         started = timer()
         try:
             response = session.process_request(case["request"], context=case["context"])
@@ -308,22 +370,39 @@ def run_cases(
                 duration_ms=duration_ms,
                 latency_condition=latency_condition,
             )
-            _append_jsonl(output_path, row)
-            rows.append(row)
-            break
-        duration_ms = (timer() - started) * 1000
-        row = _response_row(
-            response,
-            case,
-            run_id=run_id,
-            code_revision=code_revision,
-            model_id=model_id,
-            duration_ms=duration_ms,
-            latency_condition=latency_condition,
-        )
+        else:
+            duration_ms = (timer() - started) * 1000
+            row = _response_row(
+                response,
+                case,
+                run_id=run_id,
+                code_revision=code_revision,
+                model_id=model_id,
+                duration_ms=duration_ms,
+                latency_condition=latency_condition,
+            )
+        failed = row["outcome"] != "completed"
+        stop_reason = None
+        if failed:
+            failures += 1
+            if continue_on_failure:
+                assert provider_trace_path is not None
+                if row["outcome"] == "provider_failure":
+                    row["provider_diagnostic"] = _new_provider_diagnostic(
+                        provider_trace_path, trace_offset
+                    )
+                stop_reason = _continuation_stop_reason(row, failures)
+                if stop_reason:
+                    row["evaluation_stop_reason"] = stop_reason
         _append_jsonl(output_path, row)
         rows.append(row)
-        if row["outcome"] != "completed":
+        if continue_on_failure:
+            _append_jsonl(
+                output_path.with_name("continuation-attempts.jsonl"),
+                {"case_id": case["case_id"], "state": "finished",
+                 "timestamp": datetime.now(UTC).isoformat()},
+            )
+        if failed and (not continue_on_failure or stop_reason is not None):
             break
     return rows
 
@@ -677,6 +756,76 @@ def run_live_evaluation(output_dir: Path | None = None) -> bool:
     return len(rows) == len(cases) and outcomes["completed"] == len(cases)
 
 
+def run_continuation(output_dir: Path) -> bool:
+    if sys.platform != "linux":
+        raise RuntimeError("The bounded continuation is Linux/Ubuntu-only.")
+    by_id = {case["case_id"]: case for case in load_cases()}
+    cases = [by_id[case_id] for case_id in CONTINUATION_CASE_IDS]
+    config = _live_config()
+    if config.trace_path is None:
+        raise ValueError("AGENT_TRACE_PATH is required for fatal provider-error detection.")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results_path = output_dir / "continuation-results.jsonl"
+    summary_path = output_dir / "continuation-summary.json"
+    manifest_path = output_dir / "continuation-manifest.json"
+    if any(path.exists() for path in (results_path, summary_path, manifest_path)):
+        raise FileExistsError("Refusing to repeat or overwrite the continuation.")
+    run_id = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid4().hex[:8]
+    manifest = {
+        "run_id": run_id,
+        "code_revision": _git_revision(),
+        "model_id": config.model_name,
+        "case_ids": list(CONTINUATION_CASE_IDS),
+        "timing_panel": list(CONTINUATION_CASE_IDS),
+        "max_provider_operational_failures": 3,
+        "live_step_timeout_minutes": 15,
+        "case_retries": 0,
+        "diagnostic": "skipped; previous successful diagnostic preserved separately",
+        "retrieval_comparison": "reuse evaluation/retrieval_comparison.json unchanged",
+    }
+    with manifest_path.open("x", encoding="utf-8") as manifest_file:
+        json.dump(manifest, manifest_file, indent=2)
+    session = AgentSession(config)
+    try:
+        rows = run_cases(
+            session,
+            cases,
+            run_id=run_id,
+            code_revision=manifest["code_revision"],
+            model_id=config.model_name,
+            output_path=results_path,
+            continue_on_failure=True,
+            provider_trace_path=config.trace_path,
+        )
+    finally:
+        session.close()
+    outcomes = Counter(row["outcome"] for row in rows)
+    latency = [
+        row["duration_ms"] for row in rows
+        if row["outcome"] == "completed" and row["response_status"] != "error"
+    ]
+    summary = {
+        **manifest,
+        "attempted": len(rows),
+        "completed_responses": outcomes["completed"],
+        "provider_failures": outcomes["provider_failure"],
+        "operational_failures": outcomes["operational_failure"],
+        "not_run": len(cases) - len(rows),
+        "stop_reason": rows[-1].get("evaluation_stop_reason", "all_selected_cases_attempted"),
+        "qualifying_latency_samples": len(latency),
+        "latency_definition": "non-error completed responses, including incorrect/clarification",
+        "p50_ms": percentile_nearest_rank(latency, 0.50) if len(latency) >= 10 else None,
+        "p95_ms": percentile_nearest_rank(latency, 0.95) if len(latency) >= 10 else None,
+        "answer_grades": "pending separate offline rubric review",
+    }
+    with summary_path.open("x", encoding="utf-8") as summary_file:
+        json.dump(summary, summary_file, indent=2)
+    print(json.dumps(summary))
+    return len(rows) == len(cases) and not (
+        outcomes["provider_failure"] or outcomes["operational_failure"]
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     mode = parser.add_mutually_exclusive_group(required=True)
@@ -687,6 +836,10 @@ def main() -> int:
         help="run one MCP-backed case before the bounded evaluation",
     )
     mode.add_argument("--validate-only", action="store_true", help="validate cases without Groq")
+    mode.add_argument(
+        "--continue-remaining", action="store_true",
+        help="authorize the bounded Ubuntu EVAL-004-020 continuation, no diagnostic",
+    )
     parser.add_argument(
         "--diagnostic-case",
         help="case ID for --diagnostic (default: EVAL-001); does not select full-suite cases",
@@ -699,6 +852,8 @@ def main() -> int:
     args = parser.parse_args()
     if args.diagnostic_case is not None and not args.diagnostic:
         parser.error("--diagnostic-case requires --diagnostic")
+    if args.continue_remaining and args.output_dir is None:
+        parser.error("--continue-remaining requires a separate --output-dir")
     cases = load_cases()
     if args.validate_only:
         latency_count = sum(case["latency_sample"] for case in cases)
@@ -712,6 +867,8 @@ def main() -> int:
             args.output_dir,
             case_id=args.diagnostic_case if args.diagnostic_case is not None else "EVAL-001",
         ) else 1
+    if args.continue_remaining:
+        return 0 if run_continuation(args.output_dir) else 1
     return 0 if run_live_evaluation(args.output_dir) else 1
 
 
